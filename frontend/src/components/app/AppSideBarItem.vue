@@ -23,7 +23,7 @@ const emit = defineEmits<{ click: [] }>()
 
 const base = 'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition'
 const active = 'bg-brand-600 text-white'
-const idle = 'hover:bg-slate-800 hover:text-white'
+const idle = 'hover:bg-sidebar-text/10'
 
 const currentRoute = useRoute()
 const router = useRouter()

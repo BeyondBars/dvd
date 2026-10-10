@@ -38,6 +38,18 @@ class UserTest extends TestCase
         Notification::assertNothingSent();
     }
 
+    public function testUsersWhoCanOnlyViewUsersCannotEditThem()
+    {
+        $viewer = $this->createStandardUser();
+        $viewer->allow('read users');
+        $admin = $this->createAdminUser(['first_name' => 'Admin']);
+
+        $this->be($viewer)->getJson("users/{$admin->id}")->assertSuccessful();
+        $this->be($viewer)->putJson("users/{$admin->id}", ['first_name' => 'Hacked'])->assertForbidden();
+
+        $this->assertDatabaseHas('users', ['id' => $admin->id, 'first_name' => 'Admin']);
+    }
+
     public function testUserCanUpdateTheirOwnProfile()
     {
         $user = $this->createStandardUser();

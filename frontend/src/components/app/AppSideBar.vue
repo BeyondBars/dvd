@@ -3,20 +3,23 @@
   <div v-if="open" class="fixed inset-0 z-30 bg-slate-900/40 lg:hidden" @click="emit('close')" />
 
   <aside
-    class="fixed inset-y-0 left-0 z-40 flex w-64 flex-col bg-slate-900 text-slate-300 transition-transform lg:static lg:translate-x-0"
+    class="fixed inset-y-0 left-0 z-40 flex w-64 flex-col bg-sidebar text-sidebar-text transition-transform lg:static lg:translate-x-0"
     :class="open ? 'translate-x-0' : '-translate-x-full'"
   >
     <div class="flex items-center justify-between px-5 py-5">
-      <img class="h-8 w-auto" src="@/assets/img/logo/white-logo.png" alt="Home" />
-      <button type="button" class="rounded-md p-2 hover:bg-slate-800 lg:hidden" aria-label="Close menu" @click="emit('close')">
+      <img class="h-8 w-auto" :src="settingsStore.sidebarIsDark ? whiteLogo : logo" :alt="settingsStore.applied.app_name" />
+      <button type="button" class="rounded-md p-2 hover:bg-sidebar-text/10 lg:hidden" aria-label="Close menu" @click="emit('close')">
         <FontAwesomeIcon icon="xmark" />
       </button>
     </div>
 
     <nav class="flex flex-1 flex-col gap-1 px-3">
       <SidebarItem :to="{ name: 'dashboard' }" icon="house">Dashboard</SidebarItem>
-      <SidebarItem :to="{ name: 'users' }" icon="users">User Management</SidebarItem>
-      <SidebarItem :to="{ name: 'settings' }" icon="gear">Settings</SidebarItem>
+      <!-- Modules only show for users with their "view" permission (set per user under Users > Permissions). -->
+      <SidebarItem v-if="can('read users')" :to="{ name: 'users' }" icon="users">User Management</SidebarItem>
+      <SidebarItem v-if="can('read settings') || can('manage settings')" :to="{ name: 'settings' }" icon="gear">
+        Settings
+      </SidebarItem>
       <SidebarItem :to="{ name: 'account' }" icon="circle-user">My Account</SidebarItem>
 
       <div class="mt-auto mb-4">
@@ -32,12 +35,18 @@ import { useToast } from 'vue-toast-notification'
 import { isAxiosError } from 'axios'
 import SidebarItem from './AppSideBarItem.vue'
 import { useLogout } from '@/composables/use-logout'
+import { useSettingsStore } from '@/stores/settings'
+import { useLoggedInUser } from '@/composables/use-logged-in-user'
+import logo from '@/assets/img/logo/logo.png'
+import whiteLogo from '@/assets/img/logo/white-logo.png'
 
 defineProps<{ open: boolean }>()
 const emit = defineEmits<{ close: [] }>()
 
 const toast = useToast()
 const { logout } = useLogout()
+const settingsStore = useSettingsStore()
+const { can } = useLoggedInUser()
 
 const logoutUser = async () => {
   try {

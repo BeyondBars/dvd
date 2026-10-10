@@ -8,7 +8,6 @@
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { templates } from './templates'
-window.document.title = import.meta.env.VITE_APP_TITLE
 
 const route = useRoute()
 

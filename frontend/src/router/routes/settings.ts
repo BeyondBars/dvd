@@ -6,6 +6,7 @@ const settings: RouteRecordRaw[] = createRoutes({ template: 'app', restricted: t
     path: '/settings',
     name: 'settings',
     component: () => import('@/views/settings/Settings.vue'),
+    meta: { authorize: ['read settings', 'manage settings'] },
   },
 ])
 

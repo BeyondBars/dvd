@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { http } from '@/utils/http'
 import type { Paginated, UserListResource, UserResource } from '@/types/user'
+import type { UserPermissions } from '@/types/permission'
 
 export type UserPayload = Partial<
   Pick<UserResource, 'first_name' | 'last_name' | 'email' | 'mobile' | 'status'> & { role: string | null }
@@ -96,6 +97,23 @@ export const useUserStore = defineStore('user', {
       const response = await http.put<{ data: UserResource }>(`users/${id}/disable-two-factor`)
 
       return { response, resource: response.data.data }
+    },
+
+    // Per-user permissions (super admins only)
+    async fetchPermissions(id: number | string) {
+      const response = await http.get<{ data: UserPermissions }>(`users/${id}/permissions`)
+      return response.data.data
+    },
+
+    /** `permissions` is keyed by ability name: what the user should end up with. */
+    async updatePermissions(id: number | string, permissions: Record<string, boolean>) {
+      const response = await http.put<{ data: UserPermissions }>(`users/${id}/permissions`, { permissions })
+      return response.data.data
+    },
+
+    async resetPermissions(id: number | string) {
+      const response = await http.delete<{ data: UserPermissions }>(`users/${id}/permissions`)
+      return response.data.data
     },
 
     resetUser() {

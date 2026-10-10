@@ -7,7 +7,10 @@ export default mergeConfig(
   defineConfig({
     test: {
       environment: 'jsdom',
-      exclude: [...configDefaults.exclude, 'e2e/**'],
+      include: ['src/**/__tests__/**/*.spec.ts'],
+      exclude: [...configDefaults.exclude, 'e2e/**', 'cypress/**'],
+      setupFiles: ['src/__tests__/setup.ts'],
+      restoreMocks: true,
       root: fileURLToPath(new URL('./', import.meta.url))
     }
   })

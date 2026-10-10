@@ -4,10 +4,15 @@ import { FontAwesomeIcon as fa } from '@fortawesome/vue-fontawesome'
 import {
   faBars,
   faChevronLeft,
+  faEye,
+  faEyeSlash,
   faCircleUser,
   faGear,
   faHouse,
+  faLock,
+  faPalette,
   faRightFromBracket,
+  faShieldHalved,
   faUsers,
   faXmark,
 } from '@fortawesome/free-solid-svg-icons'
@@ -26,8 +31,9 @@ import httpPlugin from '@/utils/http'
 import VueSweetalert2 from 'vue-sweetalert2';
 import 'sweetalert2/dist/sweetalert2.min.css';
 import moment from 'moment'
+import { useSettingsStore } from '@/stores/settings'
 // Add icons to the library
-library.add(faBars, faChevronLeft, faCircleUser, faGear, faHouse, faRightFromBracket, faUsers, faXmark, faFacebookF, faGoogle)
+library.add(faBars, faChevronLeft, faCircleUser, faEye, faEyeSlash, faGear, faHouse, faLock, faPalette, faRightFromBracket, faShieldHalved, faUsers, faXmark, faFacebookF, faGoogle)
 
 const app = createApp(App)
 
@@ -43,5 +49,8 @@ app.use(VueSweetalert2)
 app.config.globalProperties.$date = (date, options = { format: 'DD/MM/YYYY [at] h:mm a' }) => {
   return moment(date).format(options.format)
 };
+
+// Theme the app from the saved UI settings (applies the cached copy first, so there's no flash).
+useSettingsStore().init()
 
 app.mount('#app')

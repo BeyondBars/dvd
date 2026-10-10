@@ -4,6 +4,7 @@ namespace App\Policies;
 
 use App\Models\User;
 use App\Support\Enums\UserAbility;
+use App\Support\Enums\UserRole;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
 class UserPolicy
@@ -41,6 +42,14 @@ class UserPolicy
     public function updatePassword(User $user, User $model): bool
     {
         return $user->is($model);
+    }
+
+    /**
+     * Only super admins set per-user permissions, and never their own (so they can't lock themselves out).
+     */
+    public function managePermissions(User $user, User $model): bool
+    {
+        return !$user->is($model) && $user->isA(UserRole::SuperAdmin->value);
     }
 
     /**

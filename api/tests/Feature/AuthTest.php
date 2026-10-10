@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\User;
+use App\Support\Enums\UserAbility;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Response;
 use Tests\TestCase;
@@ -97,6 +98,6 @@ class AuthTest extends TestCase
         $this->postJson('auth', ['email' => 'admin@example.com', 'password' => 'Secret*12345'])
             ->assertSuccessful()
             ->assertJsonPath('data.role.name', 'super_admin')
-            ->assertJsonCount(2, 'data.abilities');
+            ->assertJsonCount(count(UserAbility::cases()), 'data.abilities');
     }
 }

@@ -119,12 +119,20 @@ class User extends Authenticatable
     */
 
     /**
-     * Load the user's own abilities merged with their role's abilities.
+     * Load the user's effective abilities: their role's abilities plus the ones given to them
+     * directly, minus any forbidden to them directly (see App\Services\UserPermissions).
      */
     public function loadAbilities(): self
     {
         $this->loadMissing('role.abilities', 'abilities');
-        $this->setRelation('abilities', $this->abilities->merge($this->role?->abilities ?? [])->unique('id')->values());
+
+        [$forbidden, $allowed] = $this->abilities->partition(fn ($ability) => (bool) $ability->pivot->forbidden);
+
+        $this->setRelation('abilities', $allowed
+            ->merge($this->role?->abilities ?? [])
+            ->unique('id')
+            ->whereNotIn('id', $forbidden->modelKeys())
+            ->values());
 
         return $this;
     }

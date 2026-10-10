@@ -1,20 +1,33 @@
 <template>
-  <PageHeader title="Edit user" />
+  <PageHeader :title="canEdit ? 'Edit user' : 'User details'">
+    <RouterLink v-if="canManagePermissions" :to="{ name: 'users.permissions', params: { id: userId } }" class="btn btn-secondary">
+      <FontAwesomeIcon icon="shield-halved" />
+      Permissions
+    </RouterLink>
+  </PageHeader>
 
   <div class="card max-w-xl p-6">
+    <p v-if="!canEdit" class="mb-4 flex items-center gap-2 rounded-lg bg-slate-100 px-3 py-2 text-sm text-slate-600">
+      <FontAwesomeIcon icon="lock" />
+      View only. You don't have permission to edit users.
+    </p>
+
     <form novalidate @submit="onSubmit">
-      <div class="grid gap-x-4 sm:grid-cols-2">
-        <HTBFormField name="first_name" label="First name" type="text" />
-        <HTBFormField name="last_name" label="Last name" type="text" />
-      </div>
-      <HTBPhoneInput name="mobile" label="Mobile" type="text" />
+      <!-- A disabled fieldset disables every input inside it. -->
+      <fieldset :disabled="!canEdit">
+        <div class="grid gap-x-4 sm:grid-cols-2">
+          <HTBFormField name="first_name" label="First name" type="text" />
+          <HTBFormField name="last_name" label="Last name" type="text" />
+        </div>
+        <HTBPhoneInput name="mobile" label="Mobile" type="text" />
 
-      <div class="mb-4">
-        <label class="form-label" for="email">Email</label>
-        <input id="email" v-model="email" class="form-input" type="email" disabled />
-      </div>
+        <div class="mb-4">
+          <label class="form-label" for="email">Email</label>
+          <input id="email" v-model="email" class="form-input" type="email" disabled />
+        </div>
+      </fieldset>
 
-      <div class="flex justify-end">
+      <div v-if="canEdit" class="flex justify-end">
         <button type="submit" class="btn btn-primary">Update details</button>
       </div>
     </form>
@@ -31,6 +44,8 @@ import { useToast } from 'vue-toast-notification'
 import { isAxiosError } from 'axios'
 
 import { useUserStore } from '@/stores/users'
+import { useLoggedInUser } from '@/composables/use-logged-in-user'
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import { useForm, useField } from 'vee-validate'
 import * as yup from 'yup'
 
@@ -66,6 +81,15 @@ const { value: email } = useField<string>('email')
 
 const userId = computed(() => String(route.params.id))
 
+// Matches UserPolicy::update: your own account, or anyone's with "write users".
+const { loggedInUser, can } = useLoggedInUser()
+const canEdit = computed(() => String(loggedInUser.value.id) === userId.value || can('write users'))
+
+// Super admins set per-user permissions, except their own.
+const canManagePermissions = computed(
+  () => loggedInUser.value.role?.name === 'super_admin' && String(loggedInUser.value.id) !== userId.value
+)
+
 // Load user details from store
 const loadUser = async () => {
   await fetchUser(userId.value)
@@ -89,6 +113,8 @@ onUnmounted(() => {
 
 // Form submit handler
 const onSubmit = handleSubmit(async (payload) => {
+  if (!canEdit.value) return
+
   try {
     // The email can't be changed here (the field is read-only).
     await updateUser(userId.value, {

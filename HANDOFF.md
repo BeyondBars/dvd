@@ -62,6 +62,35 @@ See README.md for setup.
 - 51/51 API tests pass; `npm run typecheck` and `npm run build` pass. Sign-in, 2FA setup and verification,
   dashboard, users, account and settings were checked in a browser at desktop and phone widths.
 
+### UI settings (branch `env_changes`)
+- App-wide appearance is saved in the `settings` table (`App\Models\Setting`, key/JSON value, defaults in
+  `Setting::DEFAULTS`): app name, primary/page/sidebar colours, font and corner radius.
+- `GET /settings` is public (the sign-in screens are themed too); `PUT /settings` and `DELETE /settings` (reset)
+  need the new `manage settings` ability, which super admins get. Existing databases need
+  `php artisan migrate && php artisan abilities:refresh`.
+- The SPA applies them as `--app-*` CSS variables (`stores/settings.ts`); `app.css` derives the `brand-*` shades,
+  `sidebar`, `page`, `--font-sans` and the radius scale from them. The last settings are cached in localStorage so
+  reloads don't flash the default theme. Settings page has an Appearance panel with live preview.
+
+### Per-user permissions (branch `env_changes`)
+- Abilities are grouped into modules in `UserAbility::modules()` (Users: view/manage, Settings: view/manage; new
+  `read settings` ability, which Staff get by default). Roles set the defaults; a super admin can add or remove
+  abilities for one user at Users > user > Permissions (`/users/{id}/permissions`, `App\Services\UserPermissions`,
+  stored as Bouncer allow/forbid). Super admins can't edit their own permissions.
+- `User::loadAbilities()` now leaves out abilities forbidden to the user, so the SPA's `can()` matches the API.
+- Sidebar items for a module only show with its "view" ability; Dashboard and My Account always show.
+- Existing databases need `php artisan abilities:refresh` for the new ability.
+
+### Frontend unit tests (branch `env_changes`)
+- Vitest + @vue/test-utils + jsdom. Run inside the container: `docker compose exec vue npm run test:unit`
+  (`test:unit:watch` to re-run on save). Don't `npm install` on the host: `frontend/` is bind-mounted and the
+  container's packages live in a volume at `/home/node/node_modules`. After pulling, rebuild the image (or run
+  `npm install` in `/home/node` inside the container) to get the new dev dependencies.
+- Tests live next to the code in `__tests__/*.spec.ts`. `src/__tests__/setup.ts` mocks the API client and toasts;
+  `src/__tests__/helpers.ts` has `signIn(abilities, { role })`, `makeRouter()` and `ok()` for API responses.
+- `vitest.config.js` is now `vitest.config.mjs` (it imports the ESM-only Tailwind plugin via vite.config.mjs).
+- The Cypress e2e placeholder (`cypress/e2e/example.cy.ts`) is still the template's and would fail.
+
 ## Getting started (dev)
 ```
 cp api/.env.example api/.env
