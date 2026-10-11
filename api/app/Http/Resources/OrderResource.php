@@ -19,6 +19,8 @@ class OrderResource extends JsonResource
             'reference' => $this->reference,
             'status' => $this->status->value,
             'status_label' => $this->status->label(),
+            // Set when the customer was signed in to their account.
+            'customer_id' => $this->customer_id,
             'customer_name' => $this->customer_name,
             'customer_phone' => $this->customer_phone,
             'customer_email' => $this->customer_email,

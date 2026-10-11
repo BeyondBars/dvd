@@ -6,6 +6,7 @@ use App\Support\Enums\OrderStatus;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
 
@@ -24,7 +25,7 @@ class Order extends Model
     public const FIRST_NUMBER = 1001;
 
     protected $fillable = [
-        'number', 'public_token', 'status', 'customer_name', 'customer_phone', 'customer_email', 'pickup_at',
+        'number', 'public_token', 'status', 'customer_id', 'customer_name', 'customer_phone', 'customer_email', 'pickup_at',
         'notes', 'subtotal_cents', 'total_cents', 'payment_method', 'payment_status', 'accepted_at', 'ready_at',
         'completed_at', 'cancelled_at', 'cancel_reason',
     ];
@@ -42,6 +43,11 @@ class Order extends Model
             'completed_at' => 'datetime',
             'cancelled_at' => 'datetime',
         ];
+    }
+
+    public function customer(): BelongsTo
+    {
+        return $this->belongsTo(Customer::class);
     }
 
     public function items(): HasMany

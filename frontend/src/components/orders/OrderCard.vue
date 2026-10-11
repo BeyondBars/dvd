@@ -31,7 +31,12 @@ const pickup = computed(() => (props.order.pickup_at ? formatTime(props.order.pi
     <header class="flex items-start justify-between gap-3">
       <div>
         <p class="text-lg font-bold text-slate-900">{{ order.reference }}</p>
-        <p class="text-sm text-slate-600">{{ order.customer_name }}</p>
+        <p class="flex items-center gap-1.5 text-sm text-slate-600">
+          {{ order.customer_name }}
+          <span v-if="order.customer_id" class="rounded-full bg-slate-100 px-1.5 py-0.5 text-[10px] font-semibold text-slate-600 uppercase" title="Signed in to their account">
+            Account
+          </span>
+        </p>
       </div>
       <div class="text-right">
         <p class="flex items-center justify-end gap-1.5 text-sm font-semibold text-slate-900">

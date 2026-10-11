@@ -35,6 +35,19 @@ Route::prefix('public')->middleware('throttle:public')->group(function () {
     Route::get('/store', Controllers\PublicApi\StoreController::class);
     Route::post('/orders', [Controllers\PublicApi\OrderController::class, 'store'])->middleware('throttle:orders');
     Route::get('/orders/{token}', [Controllers\PublicApi\OrderController::class, 'show']);
+
+    // Customer accounts (session cookie, "customer" guard).
+    Route::post('/customer/register', [Controllers\Customer\AuthController::class, 'register'])->middleware('throttle:customer-auth');
+    Route::post('/customer/login', [Controllers\Customer\AuthController::class, 'login'])->middleware('throttle:customer-auth');
+    Route::post('/customer/logout', [Controllers\Customer\AuthController::class, 'logout']);
+    Route::post('/customer/password/forgot', [Controllers\Customer\PasswordController::class, 'forgot'])->middleware('throttle:emails');
+    Route::post('/customer/password/reset', [Controllers\Customer\PasswordController::class, 'reset'])->middleware('throttle:customer-auth');
+
+    Route::middleware('auth:customer')->group(function () {
+        Route::get('/customer', [Controllers\Customer\AccountController::class, 'show']);
+        Route::put('/customer', [Controllers\Customer\AccountController::class, 'update']);
+        Route::get('/customer/orders', [Controllers\Customer\AccountController::class, 'orders']);
+    });
 });
 
 /*

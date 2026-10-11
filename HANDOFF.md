@@ -122,10 +122,17 @@ This repo is the admin and backend for Desi Videshi Diner. The customer website 
 - Admin: Orders page (board refreshing every 10 seconds with an optional chime, plus History) behind
   `read orders` / `manage orders` (staff get both), and an Online ordering card in Settings.
 - New order alerts use the existing mail and Vonage setup; locally SMS goes to the log and mail to MailDev.
+- Customer accounts: `customers` table and a separate `customer` session guard (staff stay on `web`, which is
+  all `auth:sanctum` checks, so a customer login never opens the admin). `/public/customer/...`: register,
+  login, logout, password forgot/reset (own token table; the emailed link goes to `WEBSITE_URL/reset-password`),
+  and, signed in, `GET/PUT /public/customer` and `GET /public/customer/orders`. Orders placed while signed in
+  get `customer_id` and show an "Account" tag on the board. No email verification yet.
+- The website's origin must be in `SANCTUM_STATEFUL_DOMAINS` (localhost:3000 locally) for customer logins, so
+  it calls `GET /sanctum/csrf-cookie` once and sends `X-XSRF-TOKEN` with every POST/PUT (guest orders too).
+  In production the API needs to share the site, e.g. api.desivideshidiner.com.au with
+  `SESSION_DOMAIN=.desivideshidiner.com.au`.
 - After pulling: `php artisan migrate && php artisan abilities:refresh`.
-- Not done yet: customer accounts, and the website side (menu from the API, cart, checkout, status page).
-  If the website domain is added to `SANCTUM_STATEFUL_DOMAINS` for customer logins, the website must fetch
-  `/sanctum/csrf-cookie` before posting orders.
+- Not done yet: the website side (menu from the API, cart, checkout, status page, account pages).
 
 ## Getting started (dev)
 ```

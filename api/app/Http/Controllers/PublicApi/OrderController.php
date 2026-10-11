@@ -16,7 +16,10 @@ class OrderController extends Controller
 {
     public function store(PlaceOrderRequest $request, PlaceOrder $placeOrder): JsonResponse
     {
-        return (new PublicOrderResource($placeOrder($request->validated())))->response()->setStatusCode(201);
+        // Orders from a signed in customer show up in their account.
+        $order = $placeOrder($request->validated(), $request->user('customer'));
+
+        return (new PublicOrderResource($order))->response()->setStatusCode(201);
     }
 
     public function show(string $token): PublicOrderResource

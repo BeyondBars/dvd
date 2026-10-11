@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Customer;
 use App\Models\MenuItem;
 use App\Models\Order;
 use App\Notifications\Orders\NewOrderNotification;
@@ -23,7 +24,7 @@ class PlaceOrder
     {
     }
 
-    public function __invoke(array $data): Order
+    public function __invoke(array $data, ?Customer $customer = null): Order
     {
         $slots = $this->ordering->pickupSlots();
 
@@ -37,6 +38,7 @@ class PlaceOrder
 
         $order = $this->create([
             'status' => OrderStatus::New,
+            'customer_id' => $customer?->id,
             'customer_name' => $data['customer_name'],
             'customer_phone' => $data['customer_phone'],
             'customer_email' => $data['customer_email'] ?? null,

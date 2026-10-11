@@ -13,6 +13,7 @@ const order = (overrides: Partial<Order> = {}): Order => ({
   reference: 'DVD-1001',
   status: 'new',
   status_label: 'New',
+  customer_id: null,
   customer_name: 'Priya',
   customer_phone: '0412 345 678',
   customer_email: null,

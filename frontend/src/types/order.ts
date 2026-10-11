@@ -19,6 +19,8 @@ export type Order = {
   reference: string
   status: OrderStatus
   status_label: string
+  /** Set when the customer was signed in to their website account. */
+  customer_id: number | null
   customer_name: string
   customer_phone: string
   customer_email: string | null
