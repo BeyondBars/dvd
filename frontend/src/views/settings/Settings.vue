@@ -1,5 +1,5 @@
 <template>
-  <PageHeader title="Settings" description="App-wide appearance and the roles users can hold." />
+  <PageHeader title="Settings" description="App-wide appearance, online ordering and the roles users can hold." />
 
   <div class="card mb-6 p-6">
     <div class="mb-4 flex items-center gap-2">
@@ -91,6 +91,8 @@
     </form>
   </div>
 
+  <OrderingSettingsCard :can-manage="canManage" />
+
   <div class="card overflow-hidden">
     <h2 class="px-4 pt-4 pb-2 text-base font-semibold text-slate-900">Roles</h2>
     <p class="px-4 pb-3 text-sm text-slate-500">Roles are defined in code and synced with php artisan abilities:refresh.</p>
@@ -113,6 +115,7 @@
 
 <script lang="ts" setup>
 import PageHeader from '@/components/app/PageHeader.vue'
+import OrderingSettingsCard from '@/components/settings/OrderingSettingsCard.vue'
 import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
 import { isAxiosError } from 'axios'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'

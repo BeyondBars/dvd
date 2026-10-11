@@ -73,6 +73,21 @@ class MenuSeeder extends Seeder
         ],
     ];
 
+    /** Item name => option groups (see MenuItem::syncOptionGroups()). */
+    public const OPTIONS = [
+        'Parantha Combo (Chaas / Lassi)' => [
+            ['name' => 'Drink', 'min_choices' => 1, 'max_choices' => 1, 'options' => [['name' => 'Chaas', 'price_cents' => 0], ['name' => 'Lassi', 'price_cents' => 0]]],
+        ],
+        'Desi Patty (Aloo / Paneer / Mix)' => [
+            ['name' => 'Filling', 'min_choices' => 1, 'max_choices' => 1, 'options' => [['name' => 'Aloo', 'price_cents' => 0], ['name' => 'Paneer', 'price_cents' => 0], ['name' => 'Mix', 'price_cents' => 0]]],
+        ],
+        'Black Daal & Rice' => [self::LARGE_COMBO],
+        'Rajma & Rice' => [self::LARGE_COMBO],
+        'Channe & Rice' => [self::LARGE_COMBO],
+    ];
+
+    private const LARGE_COMBO = ['name' => 'Size', 'min_choices' => 0, 'max_choices' => 1, 'options' => [['name' => 'Large Combo', 'price_cents' => 299]]];
+
     public function run(): void
     {
         if (MenuCategory::exists()) {
@@ -91,12 +106,14 @@ class MenuSeeder extends Seeder
             ]);
 
             foreach ($items as $index => [$itemName, $price, $itemDescription]) {
-                $category->items()->create([
+                $item = $category->items()->create([
                     'name' => $itemName,
                     'price_cents' => $price,
                     'description' => $itemDescription,
                     'sort_order' => $index,
                 ]);
+
+                $item->syncOptionGroups(static::OPTIONS[$itemName] ?? []);
             }
         }
     }

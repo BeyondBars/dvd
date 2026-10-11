@@ -3,16 +3,29 @@ import { flushPromises, mount } from '@vue/test-utils'
 import Settings from '@/views/settings/Settings.vue'
 import confirm from '@/utils/alert'
 import { DEFAULT_SETTINGS } from '@/stores/settings'
+import type { OrderingSettings } from '@/types/order'
 import { api, iconStub, makeRouter, ok, signIn } from '@/__tests__/helpers'
 
 vi.mock('@/utils/alert', () => ({ default: vi.fn() }))
+
+const orderingSettings = (): OrderingSettings => ({
+  ordering_enabled: true,
+  opening_hours: { mon: { open: '07:00', close: '15:00' }, tue: null, wed: null, thu: null, fri: null, sat: null, sun: null },
+  prep_minutes: 15,
+  alert_email: null,
+  alert_phone: null,
+})
 
 const css = (name: string) => document.documentElement.style.getPropertyValue(name)
 
 const mountPage = async (abilities: string[]) => {
   const pinia = signIn(abilities)
   const router = await makeRouter('/settings')
-  api.get.mockReturnValue(ok([{ id: 1, name: 'super_admin', title: 'Super Admin', description: 'Everything' }]))
+  api.get.mockImplementation((url: string) =>
+    url === 'ordering-settings'
+      ? ok(orderingSettings())
+      : ok([{ id: 1, name: 'super_admin', title: 'Super Admin', description: 'Everything' }])
+  )
 
   const wrapper = mount(Settings, { global: { plugins: [pinia, router], stubs: iconStub } })
   await flushPromises()
@@ -145,5 +158,73 @@ describe('Settings page', () => {
     wrapper.unmount()
 
     expect(css('--app-primary')).toBe(DEFAULT_SETTINGS.primary_color)
+  })
+
+  describe('online ordering', () => {
+    const card = (wrapper: Wrapper) => wrapper.find('[data-test="ordering-settings"]')
+
+    it('shows the saved hours, locked for a viewer', async () => {
+      const wrapper = await mountPage(['read settings'])
+
+      expect(api.get).toHaveBeenCalledWith('ordering-settings')
+      expect((card(wrapper).find('[aria-label="Monday opens"]').element as HTMLInputElement).value).toBe('07:00')
+      expect(card(wrapper).find('[data-day="tue"]').text()).toContain('Closed')
+      expect(card(wrapper).find('fieldset').attributes('disabled')).toBeDefined()
+      expect(card(wrapper).text()).not.toContain('Save ordering settings')
+    })
+
+    it('only enables saving after a change', async () => {
+      const wrapper = await mountPage(['read settings', 'manage settings'])
+      const save = () => card(wrapper).findAll('button').find((b) => b.text() === 'Save ordering settings')!
+
+      expect(save().attributes('disabled')).toBeDefined()
+      await card(wrapper).find('#prep_minutes').setValue('25')
+      expect(save().attributes('disabled')).toBeUndefined()
+    })
+
+    it('saves hours, prep time and alert contacts', async () => {
+      const wrapper = await mountPage(['read settings', 'manage settings'])
+      api.put.mockReturnValue(ok({ ...orderingSettings(), prep_minutes: 20 }))
+
+      await card(wrapper).find('[data-day="sat"] input[type="checkbox"]').setValue(true)
+      await card(wrapper).find('[aria-label="Saturday opens"]').setValue('09:00')
+      await card(wrapper).find('[aria-label="Saturday closes"]').setValue('13:00')
+      await card(wrapper).find('#prep_minutes').setValue('20')
+      await card(wrapper).find('#alert_phone').setValue(' 0435 331 122 ')
+      await card(wrapper).find('form').trigger('submit')
+      await flushPromises()
+
+      expect(api.put).toHaveBeenCalledWith('ordering-settings', {
+        ordering_enabled: true,
+        prep_minutes: 20,
+        alert_email: null,
+        alert_phone: '0435 331 122',
+        opening_hours: {
+          mon: { open: '07:00', close: '15:00' },
+          tue: null,
+          wed: null,
+          thu: null,
+          fri: null,
+          sat: { open: '09:00', close: '13:00' },
+          sun: null,
+        },
+      })
+    })
+
+    it('shows errors for a day', async () => {
+      const wrapper = await mountPage(['read settings', 'manage settings'])
+      api.put.mockRejectedValue(
+        Object.assign(new Error('Unprocessable'), {
+          isAxiosError: true,
+          response: { status: 422, data: { errors: { 'opening_hours.mon.close': ['Closing time must be after opening time.'] } } },
+        })
+      )
+
+      await card(wrapper).find('[aria-label="Monday closes"]').setValue('06:00')
+      await card(wrapper).find('form').trigger('submit')
+      await flushPromises()
+
+      expect(card(wrapper).find('[data-day="mon"]').text()).toContain('Closing time must be after opening time.')
+    })
   })
 })

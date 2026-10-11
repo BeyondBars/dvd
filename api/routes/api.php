@@ -32,6 +32,22 @@ Route::get('/settings', [Controllers\SettingController::class, 'show']);
 // Read by the customer website (desivideshidiner.com.au).
 Route::prefix('public')->middleware('throttle:public')->group(function () {
     Route::get('/menu', Controllers\PublicApi\MenuController::class);
+    Route::get('/store', Controllers\PublicApi\StoreController::class);
+    Route::post('/orders', [Controllers\PublicApi\OrderController::class, 'store'])->middleware('throttle:orders');
+    Route::get('/orders/{token}', [Controllers\PublicApi\OrderController::class, 'show']);
+
+    // Customer accounts (session cookie, "customer" guard).
+    Route::post('/customer/register', [Controllers\Customer\AuthController::class, 'register'])->middleware('throttle:customer-auth');
+    Route::post('/customer/login', [Controllers\Customer\AuthController::class, 'login'])->middleware('throttle:customer-auth');
+    Route::post('/customer/logout', [Controllers\Customer\AuthController::class, 'logout']);
+    Route::post('/customer/password/forgot', [Controllers\Customer\PasswordController::class, 'forgot'])->middleware('throttle:emails');
+    Route::post('/customer/password/reset', [Controllers\Customer\PasswordController::class, 'reset'])->middleware('throttle:customer-auth');
+
+    Route::middleware('auth:customer')->group(function () {
+        Route::get('/customer', [Controllers\Customer\AccountController::class, 'show']);
+        Route::put('/customer', [Controllers\Customer\AccountController::class, 'update']);
+        Route::get('/customer/orders', [Controllers\Customer\AccountController::class, 'orders']);
+    });
 });
 
 /*
@@ -72,6 +88,14 @@ Route::middleware(['auth:sanctum'])->group(function () {
         // Settings (requires the "manage settings" ability)
         Route::put('/settings', [Controllers\SettingController::class, 'update']);
         Route::delete('/settings', [Controllers\SettingController::class, 'destroy']);
+        Route::get('/ordering-settings', [Controllers\OrderingSettingController::class, 'show']);
+        Route::put('/ordering-settings', [Controllers\OrderingSettingController::class, 'update']);
+
+        // Orders ("read orders" to view, "manage orders" to move them along)
+        Route::get('/orders', [Controllers\Orders\OrderController::class, 'index']);
+        Route::get('/orders/{order}', [Controllers\Orders\OrderController::class, 'show']);
+        Route::put('/orders/{order}/status', [Controllers\Orders\OrderController::class, 'updateStatus']);
+        Route::put('/orders/{order}/payment', [Controllers\Orders\OrderController::class, 'updatePayment']);
 
         // Menu ("read menu" to view, "manage menu" to change)
         Route::get('/menu/categories', [Controllers\Menu\CategoryController::class, 'index']);

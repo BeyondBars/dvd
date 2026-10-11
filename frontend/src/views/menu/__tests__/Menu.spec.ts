@@ -16,6 +16,7 @@ const item = (overrides: Partial<MenuItem> = {}): MenuItem => ({
   price_cents: 799,
   sort_order: 0,
   is_available: true,
+  option_groups: [],
   ...overrides,
 })
 
@@ -96,6 +97,7 @@ describe('Menu page', () => {
       description: null,
       price_cents: 699,
       is_available: true,
+      option_groups: [],
     })
     expect(wrapper.find('[data-item="13"]').text()).toContain('$6.99')
     expect(wrapper.find('form').exists()).toBe(false)
@@ -155,5 +157,55 @@ describe('Menu page', () => {
     await flushPromises()
     expect(api.delete).toHaveBeenCalledWith('menu/items/11')
     expect(wrapper.find('[data-item="11"]').exists()).toBe(false)
+  })
+
+  it('lists the choices under an item', async () => {
+    const pinia = signIn(['read menu'])
+    const router = await makeRouter('/menu')
+    const categories = menu()
+    categories[0].items[0].option_groups = [
+      { id: 1, name: 'Size', min_choices: 0, max_choices: 1, options: [{ id: 2, name: 'Large Combo', price_cents: 299 }] },
+    ]
+    api.get.mockReturnValue(ok(categories))
+
+    const wrapper = mount(Menu, { global: { plugins: [pinia, router], stubs: iconStub } })
+    await flushPromises()
+
+    expect(wrapper.find('[data-item="11"] [data-test="choices"]').text()).toBe('Size (optional): Large Combo +$2.99')
+  })
+
+  it('saves choices with extra prices in cents and drops empty options', async () => {
+    const wrapper = await mountPage(['read menu', 'manage menu'])
+    api.put.mockReturnValue(ok(item()))
+
+    await wrapper.find('[data-item="11"]').find('[aria-label="Edit item"]').trigger('click')
+    await button(wrapper, 'Add a choice')!.trigger('click')
+    const group = wrapper.find('[data-test="choice-group"]')
+    await group.find('[aria-label="Choice 1 name"]').setValue('Size')
+    await group.find('input[type="checkbox"]').setValue(false)
+    await group.find('[aria-label="Option name"]').setValue('Large Combo')
+    await group.find('[aria-label="Extra price"]').setValue('2.99')
+    await group.findAll('button').find((b) => b.text() === '+ Add option')!.trigger('click')
+    await wrapper.find('form').trigger('submit')
+    await flushPromises()
+
+    expect(api.put).toHaveBeenCalledWith('menu/items/11', expect.objectContaining({
+      option_groups: [{ name: 'Size', min_choices: 0, max_choices: 1, options: [{ name: 'Large Combo', price_cents: 299 }] }],
+    }))
+  })
+
+  it('rejects an extra price that is not a price', async () => {
+    const wrapper = await mountPage(['read menu', 'manage menu'])
+
+    await wrapper.find('[data-item="11"]').find('[aria-label="Edit item"]').trigger('click')
+    await button(wrapper, 'Add a choice')!.trigger('click')
+    await wrapper.find('[aria-label="Choice 1 name"]').setValue('Size')
+    await wrapper.find('[aria-label="Option name"]').setValue('Large')
+    await wrapper.find('[aria-label="Extra price"]').setValue('lots')
+    await wrapper.find('form').trigger('submit')
+    await flushPromises()
+
+    expect(api.put).not.toHaveBeenCalled()
+    expect(wrapper.text()).toContain('Enter extra prices like 2.99, or leave them empty.')
   })
 })

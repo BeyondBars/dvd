@@ -6,6 +6,7 @@ import {
   faArrowUp,
   faBars,
   faChevronLeft,
+  faClock,
   faEye,
   faEyeSlash,
   faCircleUser,
@@ -14,12 +15,16 @@ import {
   faLock,
   faPalette,
   faPen,
+  faPhone,
   faPlus,
+  faReceipt,
   faRightFromBracket,
   faShieldHalved,
   faTrash,
   faUsers,
   faUtensils,
+  faVolumeHigh,
+  faVolumeXmark,
   faXmark,
 } from '@fortawesome/free-solid-svg-icons'
 import { faFacebookF, faGoogle } from '@fortawesome/free-brands-svg-icons'
@@ -39,7 +44,7 @@ import 'sweetalert2/dist/sweetalert2.min.css';
 import moment from 'moment'
 import { useSettingsStore } from '@/stores/settings'
 // Add icons to the library
-library.add(faArrowDown, faArrowUp, faPen, faPlus, faTrash, faUtensils, faBars, faChevronLeft, faCircleUser, faEye, faEyeSlash, faGear, faHouse, faLock, faPalette, faRightFromBracket, faShieldHalved, faUsers, faXmark, faFacebookF, faGoogle)
+library.add(faClock, faPhone, faReceipt, faVolumeHigh, faVolumeXmark, faArrowDown, faArrowUp, faPen, faPlus, faTrash, faUtensils, faBars, faChevronLeft, faCircleUser, faEye, faEyeSlash, faGear, faHouse, faLock, faPalette, faRightFromBracket, faShieldHalved, faUsers, faXmark, faFacebookF, faGoogle)
 
 const app = createApp(App)
 

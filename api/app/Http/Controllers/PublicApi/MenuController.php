@@ -16,7 +16,7 @@ class MenuController extends Controller
     public function __invoke(): AnonymousResourceCollection
     {
         return MenuCategoryResource::collection(
-            MenuCategory::ordered()->where('is_visible', true)->with('items')->get()
+            MenuCategory::ordered()->where('is_visible', true)->with('items.optionGroups.options')->get()
         );
     }
 }

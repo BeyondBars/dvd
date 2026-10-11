@@ -16,6 +16,7 @@
     <nav class="flex flex-1 flex-col gap-1 px-3">
       <SidebarItem :to="{ name: 'dashboard' }" icon="house">Dashboard</SidebarItem>
       <!-- Modules only show for users with their "view" permission (set per user under Users > Permissions). -->
+      <SidebarItem v-if="can('read orders') || can('manage orders')" :to="{ name: 'orders' }" icon="receipt">Orders</SidebarItem>
       <SidebarItem v-if="can('read menu') || can('manage menu')" :to="{ name: 'menu' }" icon="utensils">Menu</SidebarItem>
       <SidebarItem v-if="can('read users')" :to="{ name: 'users' }" icon="users">User Management</SidebarItem>
       <SidebarItem v-if="can('read settings') || can('manage settings')" :to="{ name: 'settings' }" icon="gear">
