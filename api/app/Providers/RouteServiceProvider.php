@@ -30,6 +30,11 @@ class RouteServiceProvider extends ServiceProvider
             return Limit::perMinute(60)->by('public:'.$request->ip());
         });
 
+        // Placing an order from the website.
+        RateLimiter::for('orders', function (Request $request) {
+            return [Limit::perMinute(5)->by('orders:'.$request->ip()), Limit::perHour(30)->by('orders-h:'.$request->ip())];
+        });
+
         // Emails that can be triggered without logging in (sign-up link, password reset).
         RateLimiter::for('emails', function (Request $request) {
             return [

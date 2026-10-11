@@ -22,7 +22,7 @@ class CategoryController extends Controller
     {
         abort_unless($request->user()->can(UserAbility::ReadMenu->value), 403);
 
-        return MenuCategoryResource::collection(MenuCategory::ordered()->with('items')->get());
+        return MenuCategoryResource::collection(MenuCategory::ordered()->with('items.optionGroups.options')->get());
     }
 
     public function store(SaveCategoryRequest $request): MenuCategoryResource
@@ -33,14 +33,14 @@ class CategoryController extends Controller
             'sort_order' => (MenuCategory::max('sort_order') ?? -1) + 1,
         ]);
 
-        return new MenuCategoryResource($category->load('items'));
+        return new MenuCategoryResource($category->load('items.optionGroups.options'));
     }
 
     public function update(SaveCategoryRequest $request, MenuCategory $category): MenuCategoryResource
     {
         $category->update($request->validated());
 
-        return new MenuCategoryResource($category->load('items'));
+        return new MenuCategoryResource($category->load('items.optionGroups.options'));
     }
 
     /**

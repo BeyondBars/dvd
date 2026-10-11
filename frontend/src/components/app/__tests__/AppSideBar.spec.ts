@@ -34,14 +34,27 @@ describe('AppSideBar', () => {
     expect(items(await mountSidebar([ability]))).toContain('Settings')
   })
 
+  it.each([['read orders'], ['manage orders']])('shows Orders with "%s"', async (ability) => {
+    expect(items(await mountSidebar([ability]))).toContain('Orders')
+  })
+
   it.each([['read menu'], ['manage menu']])('shows Menu with "%s"', async (ability) => {
     expect(items(await mountSidebar([ability]))).toContain('Menu')
   })
 
   it('shows every module to a user with all permissions', async () => {
-    const wrapper = await mountSidebar(['read menu', 'manage menu', 'read users', 'write users', 'read settings', 'manage settings'])
+    const wrapper = await mountSidebar([
+      'read orders',
+      'manage orders',
+      'read menu',
+      'manage menu',
+      'read users',
+      'write users',
+      'read settings',
+      'manage settings',
+    ])
 
-    expect(items(wrapper)).toEqual(['Dashboard', 'Menu', 'User Management', 'Settings', 'My Account', 'Logout'])
+    expect(items(wrapper)).toEqual(['Dashboard', 'Orders', 'Menu', 'User Management', 'Settings', 'My Account', 'Logout'])
   })
 
   it('links each item to its page', async () => {

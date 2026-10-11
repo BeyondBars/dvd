@@ -12,6 +12,7 @@ use App\Support\Enums\UserAbility;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Http\Response;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 
 class ItemController extends Controller
@@ -21,12 +22,14 @@ class ItemController extends Controller
         $data = $request->validated();
 
         $item = MenuItem::create([
-            ...$data,
+            ...Arr::except($data, 'option_groups'),
             // New items go to the end of their category.
             'sort_order' => (MenuItem::where('menu_category_id', $data['menu_category_id'])->max('sort_order') ?? -1) + 1,
         ]);
 
-        return new MenuItemResource($item);
+        $item->syncOptionGroups($data['option_groups'] ?? []);
+
+        return new MenuItemResource($item->load('optionGroups.options'));
     }
 
     public function update(SaveItemRequest $request, MenuItem $item): MenuItemResource
@@ -38,9 +41,13 @@ class ItemController extends Controller
             $data['sort_order'] = (MenuItem::where('menu_category_id', $data['menu_category_id'])->max('sort_order') ?? -1) + 1;
         }
 
-        $item->update($data);
+        $item->update(Arr::except($data, 'option_groups'));
 
-        return new MenuItemResource($item);
+        if (array_key_exists('option_groups', $data)) {
+            $item->syncOptionGroups($data['option_groups']);
+        }
+
+        return new MenuItemResource($item->load('optionGroups.options'));
     }
 
     public function destroy(Request $request, MenuItem $item): Response
@@ -63,6 +70,6 @@ class ItemController extends Controller
             }
         });
 
-        return MenuItemResource::collection($category->items()->get());
+        return MenuItemResource::collection($category->items()->with('optionGroups.options')->get());
     }
 }

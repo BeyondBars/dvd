@@ -86,7 +86,7 @@ class UserPermissionTest extends TestCase
 
         // The forbidden ability is no longer sent to the SPA, so the sidebar hides the module.
         $abilities = $this->be($staff->fresh())->getJson('user')->json('data.abilities.*.name');
-        $this->assertSame(['read settings', 'read menu', 'manage menu'], $abilities);
+        $this->assertSame(['read settings', 'read menu', 'manage menu', 'read orders', 'manage orders'], $abilities);
         $this->getJson('users')->assertForbidden();
     }
 

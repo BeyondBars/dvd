@@ -10,6 +10,8 @@ enum UserAbility: string
     case ManageSettings = 'manage settings';
     case ReadMenu = 'read menu';
     case ManageMenu = 'manage menu';
+    case ReadOrders = 'read orders';
+    case ManageOrders = 'manage orders';
 
     /**
      * Abilities grouped by module for display/syncing. "excludes" lists role values that may never hold it.
@@ -29,6 +31,10 @@ enum UserAbility: string
                 'read' => ['name' => self::ReadMenu, 'excludes' => []],
                 'manage' => ['name' => self::ManageMenu, 'excludes' => []],
             ],
+            'orders' => [
+                'read' => ['name' => self::ReadOrders, 'excludes' => []],
+                'manage' => ['name' => self::ManageOrders, 'excludes' => []],
+            ],
         ];
     }
 
@@ -46,7 +52,7 @@ enum UserAbility: string
             ],
             'settings' => [
                 'title' => 'Settings',
-                'description' => 'App appearance and the roles list.',
+                'description' => 'App appearance, online ordering hours and the roles list.',
                 'view' => self::ReadSettings,
             ],
             'menu' => [
@@ -54,14 +60,19 @@ enum UserAbility: string
                 'description' => 'The food menu shown and ordered from on the website.',
                 'view' => self::ReadMenu,
             ],
+            'orders' => [
+                'title' => 'Orders',
+                'description' => 'Online orders from the website.',
+                'view' => self::ReadOrders,
+            ],
         ];
     }
 
     public function label(): string
     {
         return match ($this) {
-            self::ReadUsers, self::ReadSettings, self::ReadMenu => 'View',
-            self::WriteUsers, self::ManageSettings, self::ManageMenu => 'Manage',
+            self::ReadUsers, self::ReadSettings, self::ReadMenu, self::ReadOrders => 'View',
+            self::WriteUsers, self::ManageSettings, self::ManageMenu, self::ManageOrders => 'Manage',
         };
     }
 
@@ -74,6 +85,8 @@ enum UserAbility: string
             self::ManageSettings => 'Change the app appearance.',
             self::ReadMenu => 'See the menu.',
             self::ManageMenu => 'Add, edit and remove menu items, change prices and mark items sold out.',
+            self::ReadOrders => 'See online orders.',
+            self::ManageOrders => 'Accept, update and cancel orders and mark them paid.',
         };
     }
 
@@ -86,6 +99,7 @@ enum UserAbility: string
             self::WriteUsers => self::ReadUsers,
             self::ManageSettings => self::ReadSettings,
             self::ManageMenu => self::ReadMenu,
+            self::ManageOrders => self::ReadOrders,
             default => null,
         };
     }

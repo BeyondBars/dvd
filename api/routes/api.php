@@ -32,6 +32,9 @@ Route::get('/settings', [Controllers\SettingController::class, 'show']);
 // Read by the customer website (desivideshidiner.com.au).
 Route::prefix('public')->middleware('throttle:public')->group(function () {
     Route::get('/menu', Controllers\PublicApi\MenuController::class);
+    Route::get('/store', Controllers\PublicApi\StoreController::class);
+    Route::post('/orders', [Controllers\PublicApi\OrderController::class, 'store'])->middleware('throttle:orders');
+    Route::get('/orders/{token}', [Controllers\PublicApi\OrderController::class, 'show']);
 });
 
 /*
@@ -72,6 +75,14 @@ Route::middleware(['auth:sanctum'])->group(function () {
         // Settings (requires the "manage settings" ability)
         Route::put('/settings', [Controllers\SettingController::class, 'update']);
         Route::delete('/settings', [Controllers\SettingController::class, 'destroy']);
+        Route::get('/ordering-settings', [Controllers\OrderingSettingController::class, 'show']);
+        Route::put('/ordering-settings', [Controllers\OrderingSettingController::class, 'update']);
+
+        // Orders ("read orders" to view, "manage orders" to move them along)
+        Route::get('/orders', [Controllers\Orders\OrderController::class, 'index']);
+        Route::get('/orders/{order}', [Controllers\Orders\OrderController::class, 'show']);
+        Route::put('/orders/{order}/status', [Controllers\Orders\OrderController::class, 'updateStatus']);
+        Route::put('/orders/{order}/payment', [Controllers\Orders\OrderController::class, 'updatePayment']);
 
         // Menu ("read menu" to view, "manage menu" to change)
         Route::get('/menu/categories', [Controllers\Menu\CategoryController::class, 'index']);

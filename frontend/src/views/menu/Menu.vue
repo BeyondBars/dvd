@@ -59,6 +59,10 @@
         <div class="min-w-0 flex-1">
           <p class="font-medium text-slate-900" :class="{ 'text-slate-400 line-through': !item.is_available }">{{ item.name }}</p>
           <p v-if="item.description" class="text-sm text-slate-500">{{ item.description }}</p>
+          <p v-for="group in item.option_groups" :key="group.id" class="text-xs text-slate-500" data-test="choices">
+            <span class="font-medium text-slate-700">{{ group.name }}{{ group.min_choices ? '' : ' (optional)' }}:</span>
+            {{ group.options.map((option) => option.name + (option.price_cents ? ` +${formatPrice(option.price_cents)}` : '')).join(', ') }}
+          </p>
         </div>
         <span class="w-20 text-right font-semibold whitespace-nowrap text-slate-900">{{ formatPrice(item.price_cents) }}</span>
 
@@ -157,10 +161,57 @@
           <span v-if="errors.menu_category_id" class="form-error">{{ errors.menu_category_id[0] }}</span>
         </div>
       </div>
-      <label class="mb-6 flex items-center gap-2 text-sm text-slate-700">
+      <label class="mb-4 flex items-center gap-2 text-sm text-slate-700">
         <input v-model="itemForm.is_available" type="checkbox" class="form-check" />
         Available to order (untick when sold out)
       </label>
+
+      <!-- Choices the customer makes, e.g. Filling: Aloo / Paneer / Mix, or Size: Large Combo +$2.99 -->
+      <div class="mb-6">
+        <p class="form-label">Choices</p>
+        <p v-if="!itemForm.groups.length" class="mb-2 text-sm text-slate-500">
+          None. Add one for things like a filling, a drink or a large size.
+        </p>
+        <div v-for="(group, groupIndex) in itemForm.groups" :key="groupIndex" class="mb-3 rounded-lg border border-slate-200 p-3" data-test="choice-group">
+          <div class="mb-2 flex items-center gap-2">
+            <input
+              v-model="group.name"
+              class="form-input py-1.5"
+              :class="{ 'is-invalid': errors[`option_groups.${groupIndex}.name`] }"
+              type="text"
+              placeholder="e.g. Filling"
+              maxlength="60"
+              :aria-label="`Choice ${groupIndex + 1} name`"
+            />
+            <button type="button" class="icon-btn shrink-0 hover:text-red-600" aria-label="Remove choice" @click="itemForm.groups.splice(groupIndex, 1)">
+              <FontAwesomeIcon icon="trash" />
+            </button>
+          </div>
+          <div class="mb-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-slate-700">
+            <label class="flex items-center gap-2">
+              <input v-model="group.required" type="checkbox" class="form-check" />
+              Required
+            </label>
+            <label class="flex items-center gap-2">
+              Pick up to
+              <input v-model.number="group.max" type="number" min="1" max="20" class="form-input w-16 px-2 py-1" aria-label="Most choices" />
+            </label>
+          </div>
+          <div v-for="(option, optionIndex) in group.options" :key="optionIndex" class="mb-1.5 flex items-center gap-2">
+            <input v-model="option.name" class="form-input py-1.5" type="text" placeholder="Option, e.g. Paneer" maxlength="60" aria-label="Option name" />
+            <input v-model="option.price" class="form-input w-24 py-1.5" type="text" inputmode="decimal" placeholder="+0.00" aria-label="Extra price" />
+            <button type="button" class="icon-btn shrink-0" aria-label="Remove option" @click="group.options.splice(optionIndex, 1)">
+              <FontAwesomeIcon icon="xmark" />
+            </button>
+          </div>
+          <button type="button" class="link text-sm" @click="group.options.push({ name: '', price: '' })">+ Add option</button>
+          <span v-for="message in groupErrors(groupIndex)" :key="message" class="form-error">{{ message }}</span>
+        </div>
+        <button type="button" class="btn btn-secondary px-3 py-1.5" @click="addGroup">
+          <FontAwesomeIcon icon="plus" />
+          Add a choice
+        </button>
+      </div>
       <div class="flex justify-end gap-3">
         <button type="button" class="btn btn-secondary" @click="itemForm = null">Cancel</button>
         <button type="submit" class="btn btn-primary" :disabled="saving">Save</button>
@@ -180,9 +231,10 @@ import { useMenuStore } from '@/stores/menu'
 import { useLoggedInUser } from '@/composables/use-logged-in-user'
 import { formatPrice, parsePrice } from '@/utils/money'
 import confirm from '@/utils/alert'
-import type { MenuCategory, MenuItem } from '@/types/menu'
+import type { MenuCategory, MenuItem, MenuOptionGroup } from '@/types/menu'
 
 type CategoryForm = { id: number | null; name: string; description: string; is_visible: boolean }
+type GroupForm = { name: string; required: boolean; max: number; options: { name: string; price: string }[] }
 type ItemForm = {
   item: MenuItem | null
   menu_category_id: number
@@ -190,6 +242,7 @@ type ItemForm = {
   description: string
   price: string
   is_available: boolean
+  groups: GroupForm[]
 }
 
 const menuStore = useMenuStore()
@@ -274,8 +327,26 @@ const openItem = (category: MenuCategory, item?: MenuItem) => {
     description: item?.description ?? '',
     price: item ? (item.price_cents / 100).toFixed(2) : '',
     is_available: item?.is_available ?? true,
+    groups: (item?.option_groups ?? []).map((group) => ({
+      name: group.name,
+      required: group.min_choices > 0,
+      max: group.max_choices,
+      options: group.options.map((option) => ({
+        name: option.name,
+        price: option.price_cents ? (option.price_cents / 100).toFixed(2) : '',
+      })),
+    })),
   }
 }
+
+const addGroup = () => itemForm.value?.groups.push({ name: '', required: true, max: 1, options: [{ name: '', price: '' }] })
+
+/** Every error for one choice and its options, as plain messages. */
+const groupErrors = (index: number) =>
+  Object.entries(errors.value)
+    .filter(([key]) => key.startsWith(`option_groups.${index}.`))
+    .map(([, messages]) => messages[0])
+
 
 const saveItem = async () => {
   const form = itemForm.value
@@ -287,12 +358,31 @@ const saveItem = async () => {
     return
   }
 
+  const groups: MenuOptionGroup[] = []
+  for (const [index, group] of form.groups.entries()) {
+    const options = group.options.filter((option) => option.name.trim() || option.price.trim())
+    const prices = options.map((option) => (option.price.trim() ? parsePrice(option.price) : 0))
+
+    if (prices.includes(null)) {
+      errors.value = { [`option_groups.${index}.options`]: ['Enter extra prices like 2.99, or leave them empty.'] }
+      return
+    }
+
+    groups.push({
+      name: group.name,
+      min_choices: group.required ? 1 : 0,
+      max_choices: group.max || 1,
+      options: options.map((option, optionIndex) => ({ name: option.name, price_cents: prices[optionIndex]! })),
+    })
+  }
+
   const payload = {
     menu_category_id: form.menu_category_id,
     name: form.name,
     description: form.description || null,
     price_cents: price,
     is_available: form.is_available,
+    option_groups: groups,
   }
   const saved = await run(() => (form.item ? menuStore.updateItem(form.item, payload) : menuStore.createItem(payload)))
 

@@ -106,6 +106,27 @@ This repo is the admin and backend for Desi Videshi Diner. The customer website 
 - `MenuSeeder` holds the website's menu as of Oct 2026 and only fills an empty menu. On an existing database:
   `php artisan migrate && php artisan abilities:refresh && php artisan db:seed --class=MenuSeeder`.
 
+### DVD admin, phase 2: online orders
+- Item choices: `menu_option_groups` / `menu_options` (min/max choices, extra price in cents). Sent with an item
+  as `option_groups` and replaced as a whole on save; edited in the Menu page's item dialog. `MenuSeeder` adds the
+  patty filling, combo drink and Large Combo choices (on an existing menu, add them in the admin).
+- Orders: `orders` + `order_items` (names, prices and choices are copied, so old orders survive menu changes).
+  Numbers start at DVD-1001. Statuses new > accepted > preparing > ready > completed (steps can be skipped),
+  or cancelled with an optional reason. Pay at pickup; collecting an order marks it paid.
+- Public API for the website: `GET /public/store` (open now, today's hours, pickup times),
+  `POST /public/orders` (5/min, 30/hour per IP; prices always come from the menu) and
+  `GET /public/orders/{token}` for the customer's status page (no contact details).
+- Ordering settings (`App\Services\Ordering`, in the settings table but not in the public `/settings`):
+  on/off, hours per day, prep minutes, alert email and SMS. Times are `ORDERING_TIMEZONE` (Australia/Adelaide);
+  pickup times are 15 minute steps from now + prep time (or opening time) to closing.
+- Admin: Orders page (board refreshing every 10 seconds with an optional chime, plus History) behind
+  `read orders` / `manage orders` (staff get both), and an Online ordering card in Settings.
+- New order alerts use the existing mail and Vonage setup; locally SMS goes to the log and mail to MailDev.
+- After pulling: `php artisan migrate && php artisan abilities:refresh`.
+- Not done yet: customer accounts, and the website side (menu from the API, cart, checkout, status page).
+  If the website domain is added to `SANCTUM_STATEFUL_DOMAINS` for customer logins, the website must fetch
+  `/sanctum/csrf-cookie` before posting orders.
+
 ## Getting started (dev)
 ```
 cp api/.env.example api/.env

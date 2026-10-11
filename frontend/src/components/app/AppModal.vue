@@ -16,7 +16,7 @@ onBeforeUnmount(() => document.removeEventListener('keydown', onKeydown))
 
 <template>
   <div class="fixed inset-0 z-50 flex items-end justify-center bg-slate-900/50 p-4 sm:items-center" @click.self="emit('close')">
-    <div class="card w-full max-w-lg p-6" role="dialog" aria-modal="true" :aria-label="title">
+    <div class="card max-h-[90vh] w-full max-w-lg overflow-y-auto p-6" role="dialog" aria-modal="true" :aria-label="title">
       <div class="mb-4 flex items-center justify-between gap-4">
         <h2 class="text-lg font-semibold text-slate-900">{{ title }}</h2>
         <button type="button" class="rounded-md p-2 text-slate-500 hover:bg-slate-100" aria-label="Close" @click="emit('close')">
