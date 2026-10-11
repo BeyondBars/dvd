@@ -9,7 +9,7 @@
         <button type="button" class="rounded-md p-2 text-slate-600 hover:bg-slate-100" aria-label="Open menu" @click="sidebarOpen = true">
           <FontAwesomeIcon icon="bars" />
         </button>
-        <img class="h-7 w-auto" src="@/assets/img/logo/logo.png" alt="Home" />
+        <img class="h-10 w-auto" src="@/assets/img/logo/logo.png" alt="Home" />
       </header>
 
       <main id="page-content-wrapper" class="flex-1 overflow-y-auto px-4 py-6 sm:px-6 lg:px-8">

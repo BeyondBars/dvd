@@ -6,11 +6,11 @@
  * Components use `brand-*`, `sidebar*` and `page` rather than a named Tailwind palette.
  */
 :root {
-  --app-primary: #4f46e5;
-  --app-sidebar-bg: #0f172a;
-  --app-sidebar-text: #cbd5e1;
-  --app-page-bg: #f8fafc;
-  --app-font: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --app-primary: #f87417;
+  --app-sidebar-bg: #15110d;
+  --app-sidebar-text: #fbf7e9;
+  --app-page-bg: #fbf7e9;
+  --app-font: 'Outfit', ui-sans-serif, system-ui, sans-serif;
   --app-radius-scale: 1;
 }
 
@@ -55,6 +55,11 @@
 
   .btn-danger {
     @apply bg-red-600 text-white hover:bg-red-700 focus-visible:outline-red-600;
+  }
+
+  .icon-btn {
+    @apply inline-flex size-8 items-center justify-center rounded-md text-slate-500 transition hover:bg-slate-100
+      hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent;
   }
 
   .link {

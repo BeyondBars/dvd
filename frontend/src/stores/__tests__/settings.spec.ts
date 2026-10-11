@@ -46,10 +46,10 @@ describe('settings store', () => {
     expect(document.title).toBe('Acme')
   })
 
-  it('falls back to Inter and medium corners for unknown values', () => {
+  it('falls back to Outfit and medium corners for unknown values', () => {
     useSettingsStore().apply({ ...custom, font_family: 'comic' as never, border_radius: 'huge' as never })
 
-    expect(css('--app-font')).toContain('Inter')
+    expect(css('--app-font')).toContain('Outfit')
     expect(css('--app-radius-scale')).toBe('1')
   })
 

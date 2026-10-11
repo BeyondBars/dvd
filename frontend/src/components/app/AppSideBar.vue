@@ -7,7 +7,7 @@
     :class="open ? 'translate-x-0' : '-translate-x-full'"
   >
     <div class="flex items-center justify-between px-5 py-5">
-      <img class="h-8 w-auto" :src="settingsStore.sidebarIsDark ? whiteLogo : logo" :alt="settingsStore.applied.app_name" />
+      <img class="h-16 w-auto rounded-xl bg-page p-1" :src="settingsStore.sidebarIsDark ? whiteLogo : logo" :alt="settingsStore.applied.app_name" />
       <button type="button" class="rounded-md p-2 hover:bg-sidebar-text/10 lg:hidden" aria-label="Close menu" @click="emit('close')">
         <FontAwesomeIcon icon="xmark" />
       </button>
@@ -16,6 +16,7 @@
     <nav class="flex flex-1 flex-col gap-1 px-3">
       <SidebarItem :to="{ name: 'dashboard' }" icon="house">Dashboard</SidebarItem>
       <!-- Modules only show for users with their "view" permission (set per user under Users > Permissions). -->
+      <SidebarItem v-if="can('read menu') || can('manage menu')" :to="{ name: 'menu' }" icon="utensils">Menu</SidebarItem>
       <SidebarItem v-if="can('read users')" :to="{ name: 'users' }" icon="users">User Management</SidebarItem>
       <SidebarItem v-if="can('read settings') || can('manage settings')" :to="{ name: 'settings' }" icon="gear">
         Settings

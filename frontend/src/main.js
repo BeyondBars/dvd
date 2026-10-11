@@ -2,6 +2,8 @@ import './assets/css/app.css'
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { FontAwesomeIcon as fa } from '@fortawesome/vue-fontawesome'
 import {
+  faArrowDown,
+  faArrowUp,
   faBars,
   faChevronLeft,
   faEye,
@@ -11,9 +13,13 @@ import {
   faHouse,
   faLock,
   faPalette,
+  faPen,
+  faPlus,
   faRightFromBracket,
   faShieldHalved,
+  faTrash,
   faUsers,
+  faUtensils,
   faXmark,
 } from '@fortawesome/free-solid-svg-icons'
 import { faFacebookF, faGoogle } from '@fortawesome/free-brands-svg-icons'
@@ -33,7 +39,7 @@ import 'sweetalert2/dist/sweetalert2.min.css';
 import moment from 'moment'
 import { useSettingsStore } from '@/stores/settings'
 // Add icons to the library
-library.add(faBars, faChevronLeft, faCircleUser, faEye, faEyeSlash, faGear, faHouse, faLock, faPalette, faRightFromBracket, faShieldHalved, faUsers, faXmark, faFacebookF, faGoogle)
+library.add(faArrowDown, faArrowUp, faPen, faPlus, faTrash, faUtensils, faBars, faChevronLeft, faCircleUser, faEye, faEyeSlash, faGear, faHouse, faLock, faPalette, faRightFromBracket, faShieldHalved, faUsers, faXmark, faFacebookF, faGoogle)
 
 const app = createApp(App)
 

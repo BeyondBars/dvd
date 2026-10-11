@@ -25,6 +25,11 @@ class RouteServiceProvider extends ServiceProvider
             return Limit::perMinute(120)->by($request->user()?->id ?: $request->ip());
         });
 
+        // The customer website's public endpoints, per IP.
+        RateLimiter::for('public', function (Request $request) {
+            return Limit::perMinute(60)->by('public:'.$request->ip());
+        });
+
         // Emails that can be triggered without logging in (sign-up link, password reset).
         RateLimiter::for('emails', function (Request $request) {
             return [

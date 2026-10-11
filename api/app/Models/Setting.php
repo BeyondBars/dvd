@@ -12,16 +12,17 @@ use Illuminate\Database\Eloquent\Model;
 class Setting extends Model
 {
     public const DEFAULTS = [
-        'app_name' => 'Starter',
-        'primary_color' => '#4f46e5',
-        'sidebar_background' => '#0f172a',
-        'sidebar_text' => '#cbd5e1',
-        'page_background' => '#f8fafc',
-        'font_family' => 'inter',
+        // Desi Videshi Diner's website colours: saffron, ink and cream.
+        'app_name' => 'Desi Videshi Diner',
+        'primary_color' => '#f87417',
+        'sidebar_background' => '#15110d',
+        'sidebar_text' => '#fbf7e9',
+        'page_background' => '#fbf7e9',
+        'font_family' => 'outfit',
         'border_radius' => 'medium',
     ];
 
-    public const FONTS = ['inter', 'system', 'serif', 'mono'];
+    public const FONTS = ['outfit', 'inter', 'system', 'serif', 'mono'];
 
     public const RADII = ['none', 'small', 'medium', 'large'];
 

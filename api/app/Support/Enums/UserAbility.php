@@ -8,6 +8,8 @@ enum UserAbility: string
     case WriteUsers = 'write users';
     case ReadSettings = 'read settings';
     case ManageSettings = 'manage settings';
+    case ReadMenu = 'read menu';
+    case ManageMenu = 'manage menu';
 
     /**
      * Abilities grouped by module for display/syncing. "excludes" lists role values that may never hold it.
@@ -22,6 +24,10 @@ enum UserAbility: string
             'settings' => [
                 'read' => ['name' => self::ReadSettings, 'excludes' => []],
                 'manage' => ['name' => self::ManageSettings, 'excludes' => []],
+            ],
+            'menu' => [
+                'read' => ['name' => self::ReadMenu, 'excludes' => []],
+                'manage' => ['name' => self::ManageMenu, 'excludes' => []],
             ],
         ];
     }
@@ -43,14 +49,19 @@ enum UserAbility: string
                 'description' => 'App appearance and the roles list.',
                 'view' => self::ReadSettings,
             ],
+            'menu' => [
+                'title' => 'Menu',
+                'description' => 'The food menu shown and ordered from on the website.',
+                'view' => self::ReadMenu,
+            ],
         ];
     }
 
     public function label(): string
     {
         return match ($this) {
-            self::ReadUsers, self::ReadSettings => 'View',
-            self::WriteUsers, self::ManageSettings => 'Manage',
+            self::ReadUsers, self::ReadSettings, self::ReadMenu => 'View',
+            self::WriteUsers, self::ManageSettings, self::ManageMenu => 'Manage',
         };
     }
 
@@ -61,6 +72,8 @@ enum UserAbility: string
             self::WriteUsers => 'Invite, edit, disable and delete users.',
             self::ReadSettings => 'Open the settings page.',
             self::ManageSettings => 'Change the app appearance.',
+            self::ReadMenu => 'See the menu.',
+            self::ManageMenu => 'Add, edit and remove menu items, change prices and mark items sold out.',
         };
     }
 
@@ -72,6 +85,7 @@ enum UserAbility: string
         return match ($this) {
             self::WriteUsers => self::ReadUsers,
             self::ManageSettings => self::ReadSettings,
+            self::ManageMenu => self::ReadMenu,
             default => null,
         };
     }

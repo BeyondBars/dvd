@@ -13,5 +13,7 @@ class DatabaseSeeder extends BaseSeeder
 
         static::superAdminUser();
         static::standardUser();
+
+        $this->call(MenuSeeder::class);
     }
 }

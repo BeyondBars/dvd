@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { http } from '@/utils/http'
 
-export type FontFamily = 'inter' | 'system' | 'serif' | 'mono'
+export type FontFamily = 'outfit' | 'inter' | 'system' | 'serif' | 'mono'
 export type BorderRadius = 'none' | 'small' | 'medium' | 'large'
 
 /** Shape of GET /settings (App\Models\Setting::DEFAULTS). */
@@ -17,16 +17,17 @@ export type AppSettings = {
 
 /** Mirrors the API defaults; used until the saved settings have loaded. */
 export const DEFAULT_SETTINGS: AppSettings = {
-  app_name: 'Starter',
-  primary_color: '#4f46e5',
-  sidebar_background: '#0f172a',
-  sidebar_text: '#cbd5e1',
-  page_background: '#f8fafc',
-  font_family: 'inter',
+  app_name: 'Desi Videshi Diner',
+  primary_color: '#f87417',
+  sidebar_background: '#15110d',
+  sidebar_text: '#fbf7e9',
+  page_background: '#fbf7e9',
+  font_family: 'outfit',
   border_radius: 'medium',
 }
 
 export const FONTS: Record<FontFamily, { label: string; stack: string }> = {
+  outfit: { label: 'Outfit', stack: "'Outfit', ui-sans-serif, system-ui, sans-serif" },
   inter: { label: 'Inter', stack: "'Inter', ui-sans-serif, system-ui, sans-serif" },
   system: { label: 'System', stack: 'ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif' },
   serif: { label: 'Serif', stack: 'ui-serif, Georgia, Cambria, "Times New Roman", serif' },
@@ -124,7 +125,7 @@ export const useSettingsStore = defineStore('settings', {
       style.setProperty('--app-sidebar-bg', settings.sidebar_background)
       style.setProperty('--app-sidebar-text', settings.sidebar_text)
       style.setProperty('--app-page-bg', settings.page_background)
-      style.setProperty('--app-font', (FONTS[settings.font_family] ?? FONTS.inter).stack)
+      style.setProperty('--app-font', (FONTS[settings.font_family] ?? FONTS.outfit).stack)
       style.setProperty('--app-radius-scale', String((RADII[settings.border_radius] ?? RADII.medium).scale))
 
       document.title = settings.app_name

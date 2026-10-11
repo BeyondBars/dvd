@@ -29,6 +29,11 @@ Route::post('/password/reset', [Controllers\Auth\ResetPasswordController::class,
 // App-wide UI settings (theme colours, app name, ...). Public so the sign-in screens are themed too.
 Route::get('/settings', [Controllers\SettingController::class, 'show']);
 
+// Read by the customer website (desivideshidiner.com.au).
+Route::prefix('public')->middleware('throttle:public')->group(function () {
+    Route::get('/menu', Controllers\PublicApi\MenuController::class);
+});
+
 /*
 |--------------------------------------------------------------------------
 | Authenticated routes
@@ -67,5 +72,16 @@ Route::middleware(['auth:sanctum'])->group(function () {
         // Settings (requires the "manage settings" ability)
         Route::put('/settings', [Controllers\SettingController::class, 'update']);
         Route::delete('/settings', [Controllers\SettingController::class, 'destroy']);
+
+        // Menu ("read menu" to view, "manage menu" to change)
+        Route::get('/menu/categories', [Controllers\Menu\CategoryController::class, 'index']);
+        Route::post('/menu/categories', [Controllers\Menu\CategoryController::class, 'store']);
+        Route::put('/menu/categories/sort', [Controllers\Menu\CategoryController::class, 'sort']);
+        Route::put('/menu/categories/{category}', [Controllers\Menu\CategoryController::class, 'update']);
+        Route::delete('/menu/categories/{category}', [Controllers\Menu\CategoryController::class, 'destroy']);
+        Route::put('/menu/categories/{category}/items/sort', [Controllers\Menu\ItemController::class, 'sort']);
+        Route::post('/menu/items', [Controllers\Menu\ItemController::class, 'store']);
+        Route::put('/menu/items/{item}', [Controllers\Menu\ItemController::class, 'update']);
+        Route::delete('/menu/items/{item}', [Controllers\Menu\ItemController::class, 'destroy']);
     });
 });

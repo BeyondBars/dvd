@@ -9,7 +9,7 @@ defineProps<{ title?: string }>()
 <template>
   <div class="card w-full max-w-md p-6 sm:p-8">
     <RouterLink :to="{ name: 'login' }" class="mb-6 inline-block">
-      <img class="h-9 w-auto" src="@/assets/img/logo/logo.png" alt="Home" />
+      <img class="h-20 w-auto" src="@/assets/img/logo/logo.png" alt="Home" />
     </RouterLink>
 
     <h1 v-if="title" class="mb-4 text-xl font-bold text-slate-900">{{ title }}</h1>
