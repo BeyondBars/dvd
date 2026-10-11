@@ -15,6 +15,13 @@ const users: RouteRecordRaw[] = createRoutes({ template: 'app', restricted: true
     component: () => import('@/views/users/UserDetails.vue'),
     meta: { authorize: 'read users' },
   },
+  {
+    path: '/users/:id/permissions',
+    name: 'users.permissions',
+    props: true,
+    component: () => import('@/views/users/UserPermissions.vue'),
+    meta: { roles: ['super_admin'] },
+  },
 ])
 
 export default users

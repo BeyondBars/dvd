@@ -10,8 +10,8 @@ services:
     volumes:
       - dbdata:/var/lib/mysql
     environment:
-      MYSQL_DATABASE: invoice
-      MYSQL_USER: invoice
+      MYSQL_DATABASE: app
+      MYSQL_USER: app
       MYSQL_PASSWORD: secret
       MYSQL_ROOT_PASSWORD: secret
     command: ['--innodb_flush_log_at_trx_commit=2']

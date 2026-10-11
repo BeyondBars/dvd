@@ -1,17 +1,38 @@
 @import 'tailwindcss';
 
 /*
- * Brand colours. Apps built on this starter rebrand by changing these values only;
- * every component uses `brand-*` rather than a named Tailwind palette.
+ * Theme tokens. The `--app-*` variables are set at runtime from the settings saved in the
+ * database (see stores/settings.ts); the values below are only the fallback until they load.
+ * Components use `brand-*`, `sidebar*` and `page` rather than a named Tailwind palette.
  */
-@theme {
-  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+:root {
+  --app-primary: #f87417;
+  --app-sidebar-bg: #15110d;
+  --app-sidebar-text: #fbf7e9;
+  --app-page-bg: #fbf7e9;
+  --app-font: 'Outfit', ui-sans-serif, system-ui, sans-serif;
+  --app-radius-scale: 1;
+}
 
-  --color-brand-50: var(--color-indigo-50);
-  --color-brand-100: var(--color-indigo-100);
-  --color-brand-500: var(--color-indigo-500);
-  --color-brand-600: var(--color-indigo-600);
-  --color-brand-700: var(--color-indigo-700);
+@theme {
+  --font-sans: var(--app-font);
+
+  /* Shades are mixed from the one primary colour, so any colour gives a matching palette. */
+  --color-brand-50: color-mix(in oklab, var(--app-primary) 8%, white);
+  --color-brand-100: color-mix(in oklab, var(--app-primary) 16%, white);
+  --color-brand-500: color-mix(in oklab, var(--app-primary) 85%, white);
+  --color-brand-600: var(--app-primary);
+  --color-brand-700: color-mix(in oklab, var(--app-primary) 80%, black);
+
+  --color-sidebar: var(--app-sidebar-bg);
+  --color-sidebar-text: var(--app-sidebar-text);
+  --color-page: var(--app-page-bg);
+
+  --radius-sm: calc(0.25rem * var(--app-radius-scale));
+  --radius-md: calc(0.375rem * var(--app-radius-scale));
+  --radius-lg: calc(0.5rem * var(--app-radius-scale));
+  --radius-xl: calc(0.75rem * var(--app-radius-scale));
+  --radius-2xl: calc(1rem * var(--app-radius-scale));
 }
 
 /*
@@ -34,6 +55,11 @@
 
   .btn-danger {
     @apply bg-red-600 text-white hover:bg-red-700 focus-visible:outline-red-600;
+  }
+
+  .icon-btn {
+    @apply inline-flex size-8 items-center justify-center rounded-md text-slate-500 transition hover:bg-slate-100
+      hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent;
   }
 
   .link {

@@ -9,7 +9,7 @@
     </p>
     <div class="mt-4 flex flex-wrap gap-3">
       <RouterLink :to="{ name: 'account' }" class="btn btn-secondary">My account</RouterLink>
-      <RouterLink :to="{ name: 'users' }" class="btn btn-secondary">Manage users</RouterLink>
+      <RouterLink v-if="can('read users')" :to="{ name: 'users' }" class="btn btn-secondary">Manage users</RouterLink>
     </div>
   </div>
 </template>
@@ -18,5 +18,5 @@
 import PageHeader from '@/components/app/PageHeader.vue'
 import { useLoggedInUser } from '@/composables/use-logged-in-user'
 
-const { loggedInUser } = useLoggedInUser()
+const { loggedInUser, can } = useLoggedInUser()
 </script>

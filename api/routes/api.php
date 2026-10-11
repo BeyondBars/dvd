@@ -26,6 +26,14 @@ Route::post('/auth/verification', [Controllers\Auth\VerificationController::clas
 Route::post('/password/forgot', [Controllers\Auth\ForgotPasswordController::class, 'store'])->middleware('throttle:emails');
 Route::post('/password/reset', [Controllers\Auth\ResetPasswordController::class, 'store']);
 
+// App-wide UI settings (theme colours, app name, ...). Public so the sign-in screens are themed too.
+Route::get('/settings', [Controllers\SettingController::class, 'show']);
+
+// Read by the customer website (desivideshidiner.com.au).
+Route::prefix('public')->middleware('throttle:public')->group(function () {
+    Route::get('/menu', Controllers\PublicApi\MenuController::class);
+});
+
 /*
 |--------------------------------------------------------------------------
 | Authenticated routes
@@ -53,9 +61,27 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::delete('/users/{user}', [Controllers\UserController::class, 'destroy']);
         Route::put('/users/{user}/password', [Controllers\User\PasswordController::class, 'update']);
         Route::put('/users/{user}/disable-two-factor', Controllers\User\DisableTwoFactorController::class);
+        Route::get('/users/{user}/permissions', [Controllers\User\PermissionController::class, 'show']);
+        Route::put('/users/{user}/permissions', [Controllers\User\PermissionController::class, 'update']);
+        Route::delete('/users/{user}/permissions', [Controllers\User\PermissionController::class, 'destroy']);
 
         // Roles (read-only: roles are defined in code and synced with `php artisan abilities:refresh`)
         Route::get('/roles', [Controllers\RoleController::class, 'index']);
         Route::get('/roles/{role}', [Controllers\RoleController::class, 'show']);
+
+        // Settings (requires the "manage settings" ability)
+        Route::put('/settings', [Controllers\SettingController::class, 'update']);
+        Route::delete('/settings', [Controllers\SettingController::class, 'destroy']);
+
+        // Menu ("read menu" to view, "manage menu" to change)
+        Route::get('/menu/categories', [Controllers\Menu\CategoryController::class, 'index']);
+        Route::post('/menu/categories', [Controllers\Menu\CategoryController::class, 'store']);
+        Route::put('/menu/categories/sort', [Controllers\Menu\CategoryController::class, 'sort']);
+        Route::put('/menu/categories/{category}', [Controllers\Menu\CategoryController::class, 'update']);
+        Route::delete('/menu/categories/{category}', [Controllers\Menu\CategoryController::class, 'destroy']);
+        Route::put('/menu/categories/{category}/items/sort', [Controllers\Menu\ItemController::class, 'sort']);
+        Route::post('/menu/items', [Controllers\Menu\ItemController::class, 'store']);
+        Route::put('/menu/items/{item}', [Controllers\Menu\ItemController::class, 'update']);
+        Route::delete('/menu/items/{item}', [Controllers\Menu\ItemController::class, 'destroy']);
     });
 });
