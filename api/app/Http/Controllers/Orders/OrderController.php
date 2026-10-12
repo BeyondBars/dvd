@@ -3,12 +3,15 @@
 namespace App\Http\Controllers\Orders;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Order\CounterOrderRequest;
 use App\Http\Requests\Order\UpdateOrderStatusRequest;
 use App\Http\Resources\OrderResource;
 use App\Models\Order;
 use App\Services\Ordering;
+use App\Services\PlaceOrder;
 use App\Support\Enums\OrderStatus;
 use App\Support\Enums\UserAbility;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Validation\Rule;
@@ -37,6 +40,12 @@ class OrderController extends Controller
                 ->oldest('id')
                 ->get()
         );
+    }
+
+    /** A walk-up order taken at the truck. */
+    public function store(CounterOrderRequest $request, PlaceOrder $placeOrder): JsonResponse
+    {
+        return (new OrderResource($placeOrder->atCounter($request->validated())))->response()->setStatusCode(201);
     }
 
     public function show(Request $request, Order $order): OrderResource

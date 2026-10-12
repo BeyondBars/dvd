@@ -16,7 +16,8 @@ use Throwable;
 
 /**
  * Turns a validated order from the website into an Order: checks the truck is taking orders, the pickup
- * time and every item and choice against the menu, and works out the prices itself.
+ * time and every item and choice against the menu, and works out the prices itself. Staff use
+ * atCounter() for walk-up customers.
  */
 class PlaceOrder
 {
@@ -53,6 +54,28 @@ class PlaceOrder
         $this->alert($order);
 
         return $order;
+    }
+
+    /**
+     * An order staff take at the truck. It skips online ordering hours and staff alerts (they're the ones
+     * entering it) and starts out accepted, made as soon as possible.
+     */
+    public function atCounter(array $data): Order
+    {
+        $lines = $this->lines($data['items']);
+        $subtotal = array_sum(array_column($lines, 'line_total_cents'));
+
+        return $this->create([
+            'status' => OrderStatus::Accepted,
+            'accepted_at' => now(),
+            'customer_name' => ($data['customer_name'] ?? '') ?: 'Walk-in',
+            'customer_phone' => $data['customer_phone'] ?? '',
+            'notes' => $data['notes'] ?? null,
+            'subtotal_cents' => $subtotal,
+            'total_cents' => $subtotal,
+            'payment_method' => Order::AT_COUNTER,
+            'payment_status' => ($data['paid'] ?? false) ? Order::PAID : Order::UNPAID,
+        ], $lines);
     }
 
     /**

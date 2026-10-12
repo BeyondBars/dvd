@@ -38,7 +38,8 @@ export function receiptHtml(order: Order, businessName: string): string {
     })
     .join('')
 
-  const paid = order.payment_status === 'paid' ? 'PAID' : 'PAY AT PICKUP'
+  const atCounter = order.payment_method === 'at_counter'
+  const paid = order.payment_status === 'paid' ? 'PAID' : atCounter ? 'NOT PAID' : 'PAY AT PICKUP'
 
   return `<!doctype html>
 <html><head><meta charset="utf-8"><title>${escape(order.reference)}</title><style>${STYLES}</style></head>
@@ -47,10 +48,10 @@ export function receiptHtml(order: Order, businessName: string): string {
   <div class="center">${formatDateTime(order.created_at)}</div>
   <div class="rule"></div>
   <div class="center big">${escape(order.reference)}</div>
-  <div class="center"><b>Pickup: ${order.pickup_at ? formatTime(order.pickup_at) : 'ASAP'}</b></div>
+  <div class="center"><b>${atCounter ? 'Counter order' : `Pickup: ${order.pickup_at ? formatTime(order.pickup_at) : 'ASAP'}`}</b></div>
   <div class="rule"></div>
   <div>${escape(order.customer_name)}</div>
-  <div>${escape(order.customer_phone)}</div>
+  ${order.customer_phone ? `<div>${escape(order.customer_phone)}</div>` : ''}
   <div class="rule"></div>
   <ul>${items}</ul>
   ${order.notes ? `<div class="note">Note: ${escape(order.notes)}</div>` : ''}

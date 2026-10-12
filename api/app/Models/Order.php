@@ -11,13 +11,16 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
 
 /**
- * An online order for pickup from the truck. Paid at pickup for now.
+ * An order for pickup from the truck: placed online by the customer, or at the counter by staff.
+ * Paid at the truck (on EFTPOS Air) for now.
  */
 class Order extends Model
 {
     use HasFactory;
 
     public const PAY_AT_PICKUP = 'pay_at_pickup';
+    /** Taken at the truck by staff (walk-up customers). */
+    public const AT_COUNTER = 'at_counter';
     public const UNPAID = 'unpaid';
     public const PAID = 'paid';
 

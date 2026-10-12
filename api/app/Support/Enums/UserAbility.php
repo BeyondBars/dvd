@@ -62,7 +62,7 @@ enum UserAbility: string
             ],
             'orders' => [
                 'title' => 'Orders',
-                'description' => 'Online orders from the website.',
+                'description' => 'Orders from the website and the counter.',
                 'view' => self::ReadOrders,
             ],
         ];
@@ -86,7 +86,7 @@ enum UserAbility: string
             self::ReadMenu => 'See the menu.',
             self::ManageMenu => 'Add, edit and remove menu items, change prices and mark items sold out.',
             self::ReadOrders => 'See online orders.',
-            self::ManageOrders => 'Accept, update and cancel orders and mark them paid.',
+            self::ManageOrders => 'Take orders at the counter, accept, update and cancel orders and mark them paid.',
         };
     }
 
