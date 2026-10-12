@@ -5,6 +5,16 @@
         <FontAwesomeIcon :icon="sound.enabled.value ? 'volume-high' : 'volume-xmark'" />
         {{ sound.enabled.value ? 'Sound on' : 'Sound off' }}
       </button>
+      <button
+        type="button"
+        class="btn btn-secondary"
+        :aria-pressed="printer.autoPrint.value"
+        title="Print a receipt for each new order as it arrives"
+        @click="printer.toggle(orderStore.board)"
+      >
+        <FontAwesomeIcon icon="print" />
+        {{ printer.autoPrint.value ? 'Auto-print on' : 'Auto-print off' }}
+      </button>
       <div class="flex rounded-lg bg-slate-200/60 p-1" role="tablist">
         <button
           v-for="(label, value) in TABS"
@@ -46,6 +56,7 @@
             @move="(status) => move(order, status)"
             @cancel="cancel(order)"
             @paid="(paid) => setPaid(order, paid)"
+            @print="printer.print(order)"
           />
           <p v-if="!byStatus(column.status).length" class="rounded-xl border border-dashed border-slate-300 p-4 text-center text-sm text-slate-400">
             None
@@ -57,7 +68,14 @@
     <section v-if="finishedToday.length" class="mt-10">
       <h2 class="mb-3 text-sm font-semibold tracking-wide text-slate-500 uppercase">Finished today ({{ finishedToday.length }})</h2>
       <div class="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-        <OrderCard v-for="order in finishedToday" :key="order.id" :order="order" :can-manage="canManage" @paid="(paid) => setPaid(order, paid)" />
+        <OrderCard
+          v-for="order in finishedToday"
+          :key="order.id"
+          :order="order"
+          :can-manage="canManage"
+          @paid="(paid) => setPaid(order, paid)"
+          @print="printer.print(order)"
+        />
       </div>
     </section>
   </template>
@@ -73,6 +91,7 @@
             <th class="px-4 py-3">Items</th>
             <th class="px-4 py-3 text-right">Total</th>
             <th class="px-4 py-3">Status</th>
+            <th class="px-4 py-3"><span class="sr-only">Receipt</span></th>
           </tr>
         </thead>
         <tbody class="divide-y divide-slate-100">
@@ -85,9 +104,15 @@
             <td class="px-4 py-3 whitespace-nowrap">
               <span class="rounded-full px-2 py-0.5 text-xs font-semibold" :class="STATUS_BADGE[order.status]">{{ order.status_label }}</span>
             </td>
+            <td class="px-4 py-3 text-right">
+              <button type="button" class="link-muted" :title="`Print receipt for ${order.reference}`" @click="printer.print(order)">
+                <FontAwesomeIcon icon="print" />
+                <span class="sr-only">Print receipt</span>
+              </button>
+            </td>
           </tr>
           <tr v-if="!orderStore.history.length && !loadingHistory">
-            <td colspan="6" class="px-4 py-6 text-center text-slate-500">No orders yet.</td>
+            <td colspan="7" class="px-4 py-6 text-center text-slate-500">No orders yet.</td>
           </tr>
         </tbody>
       </table>
@@ -109,6 +134,7 @@ import Swal from 'sweetalert2'
 import { useOrderStore } from '@/stores/orders'
 import { useLoggedInUser } from '@/composables/use-logged-in-user'
 import { useOrderSound } from '@/composables/use-order-sound'
+import { useReceiptPrinter } from '@/composables/use-receipt-printer'
 import { formatPrice } from '@/utils/money'
 import { formatDateTime } from '@/utils/time'
 import type { Order, OrderStatus } from '@/types/order'
@@ -138,6 +164,7 @@ const orderStore = useOrderStore()
 const { can } = useLoggedInUser()
 const toast = useToast()
 const sound = useOrderSound()
+const printer = useReceiptPrinter()
 
 const canManage = computed(() => can('manage orders'))
 const tab = ref<keyof typeof TABS>('board')
@@ -160,6 +187,8 @@ const refresh = async () => {
       sound.play()
       toast.info(arrived.length === 1 ? `New order ${arrived[0].reference}` : `${arrived.length} new orders`)
     }
+
+    printer.printNew(orderStore.board)
   } catch (error) {
     console.error('Error refreshing orders:', error)
   }
