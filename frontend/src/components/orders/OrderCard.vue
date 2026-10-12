@@ -7,7 +7,7 @@ import { formatTime } from '@/utils/time'
 import type { Order, OrderStatus } from '@/types/order'
 
 const props = defineProps<{ order: Order; canManage: boolean; highlight?: boolean; busy?: boolean }>()
-const emit = defineEmits<{ move: [status: OrderStatus]; cancel: []; paid: [paid: boolean] }>()
+const emit = defineEmits<{ move: [status: OrderStatus]; cancel: []; paid: [paid: boolean]; print: [] }>()
 
 /** The usual next step for each status. */
 const NEXT: Partial<Record<OrderStatus, { status: OrderStatus; label: string }>> = {
@@ -69,6 +69,10 @@ const pickup = computed(() => (props.order.pickup_at ? formatTime(props.order.pi
         {{ order.customer_phone }}
       </a>
       <div class="flex items-center gap-2">
+        <button type="button" class="link-muted" :title="`Print receipt for ${order.reference}`" data-test="print" @click="emit('print')">
+          <FontAwesomeIcon icon="print" />
+          <span class="sr-only">Print receipt</span>
+        </button>
         <span class="font-bold text-slate-900">{{ formatPrice(order.total_cents) }}</span>
         <button
           type="button"
