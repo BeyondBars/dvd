@@ -7,6 +7,9 @@ import type { Order } from '@/types/order'
 const swal = vi.hoisted(() => ({ fire: vi.fn() }))
 vi.mock('sweetalert2', () => ({ default: swal }))
 
+const printHtml = vi.hoisted(() => vi.fn())
+vi.mock('@/utils/print', () => ({ printHtml }))
+
 const order = (overrides: Partial<Order> = {}): Order => ({
   id: 1,
   number: 1001,
@@ -61,7 +64,11 @@ const column = (wrapper: Wrapper, status: string) => wrapper.find(`[data-column=
 const button = (wrapper: Wrapper, text: string) => wrapper.findAll('button').find((b) => b.text() === text)
 
 describe('Orders page', () => {
-  beforeEach(() => vi.useFakeTimers({ shouldAdvanceTime: true }))
+  beforeEach(() => {
+    vi.useFakeTimers({ shouldAdvanceTime: true })
+    localStorage.clear()
+    printHtml.mockClear()
+  })
   afterEach(() => vi.useRealTimers())
 
   it('shows each order in its column with items, choices and notes', async () => {
@@ -152,5 +159,35 @@ describe('Orders page', () => {
     expect(wrapper.find('tbody').text()).toContain('DVD-1001')
     expect(wrapper.find('tbody').text()).toContain('Collected')
     expect(button(wrapper, 'Load more')).toBeUndefined()
+  })
+
+  it('prints a receipt for an order', async () => {
+    const wrapper = await mountPage(['read orders'])
+
+    await wrapper.find('[data-order="1"] [data-test="print"]').trigger('click')
+
+    expect(printHtml).toHaveBeenCalledTimes(1)
+    expect(printHtml.mock.calls[0][0]).toContain('DVD-1001')
+  })
+
+  it('auto-prints each new order once, but not the ones already waiting', async () => {
+    const wrapper = await mountPage(['read orders'])
+    await button(wrapper, 'Auto-print off')!.trigger('click')
+    expect(button(wrapper, 'Auto-print on')).toBeDefined()
+
+    api.get.mockReturnValue(ok([order(), order({ id: 2, reference: 'DVD-1002' })]))
+    await vi.advanceTimersByTimeAsync(10_000)
+    await flushPromises()
+    await vi.advanceTimersByTimeAsync(10_000)
+    await flushPromises()
+
+    expect(printHtml).toHaveBeenCalledTimes(1)
+    expect(printHtml.mock.calls[0][0]).toContain('DVD-1002')
+
+    // A reload of the board remembers what already printed.
+    wrapper.unmount()
+    await mountPage(['read orders'], [order(), order({ id: 2, reference: 'DVD-1002' }), order({ id: 3, reference: 'DVD-1003' })])
+    expect(printHtml).toHaveBeenCalledTimes(2)
+    expect(printHtml.mock.calls[1][0]).toContain('DVD-1003')
   })
 })
