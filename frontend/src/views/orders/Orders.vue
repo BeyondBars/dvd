@@ -1,6 +1,10 @@
 <template>
-  <PageHeader title="Orders" description="Online orders from the website. The board refreshes by itself.">
-    <div class="flex items-center gap-2">
+  <PageHeader title="Orders" description="Orders from the website and the counter. The board refreshes by itself.">
+    <div class="flex flex-wrap items-center gap-2">
+      <button v-if="canManage" type="button" class="btn btn-primary" @click="counterOpen = true">
+        <FontAwesomeIcon icon="plus" />
+        New order
+      </button>
       <button type="button" class="btn btn-secondary" :aria-pressed="sound.enabled.value" @click="sound.toggle">
         <FontAwesomeIcon :icon="sound.enabled.value ? 'volume-high' : 'volume-xmark'" />
         {{ sound.enabled.value ? 'Sound on' : 'Sound off' }}
@@ -121,10 +125,16 @@
       <button type="button" class="btn btn-secondary" :disabled="loadingHistory" @click="loadHistory()">Load more</button>
     </div>
   </div>
+
+  <AppModal v-if="counterOpen" title="New counter order" wide @close="counterOpen = false">
+    <CounterOrderForm @placed="placed" @cancel="counterOpen = false" />
+  </AppModal>
 </template>
 
 <script lang="ts" setup>
+import AppModal from '@/components/app/AppModal.vue'
 import PageHeader from '@/components/app/PageHeader.vue'
+import CounterOrderForm from '@/components/orders/CounterOrderForm.vue'
 import OrderCard from '@/components/orders/OrderCard.vue'
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { isAxiosError } from 'axios'
@@ -170,6 +180,7 @@ const canManage = computed(() => can('manage orders'))
 const tab = ref<keyof typeof TABS>('board')
 const busy = ref<number | null>(null)
 const loadingHistory = ref(false)
+const counterOpen = ref(false)
 /** Orders that arrived since the page opened, highlighted until they're accepted. */
 const fresh = ref(new Set<number>())
 
@@ -233,6 +244,18 @@ const run = async (order: Order, change: () => Promise<unknown>) => {
   } finally {
     busy.value = null
   }
+}
+
+const placed = (order: Order) => {
+  counterOpen.value = false
+  tab.value = 'board'
+  toast.success(
+    order.payment_status === 'paid'
+      ? `${order.reference} added (paid).`
+      : `${order.reference} added. Charge ${formatPrice(order.total_cents)} on EFTPOS Air, then mark it paid.`
+  )
+
+  if (printer.autoPrint.value) printer.print(order)
 }
 
 const move = (order: Order, status: OrderStatus) => run(order, () => orderStore.updateStatus(order, status))

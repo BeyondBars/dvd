@@ -190,4 +190,100 @@ describe('Orders page', () => {
     expect(printHtml).toHaveBeenCalledTimes(2)
     expect(printHtml.mock.calls[1][0]).toContain('DVD-1003')
   })
+
+  describe('counter orders', () => {
+    const menu = [
+      {
+        id: 1,
+        name: 'Snacks',
+        description: null,
+        sort_order: 1,
+        is_visible: true,
+        items: [
+          {
+            id: 5,
+            menu_category_id: 1,
+            name: 'Desi Patty',
+            description: null,
+            price_cents: 599,
+            sort_order: 1,
+            is_available: true,
+            option_groups: [
+              { id: 1, name: 'Filling', min_choices: 1, max_choices: 1, options: [{ id: 11, name: 'Aloo', price_cents: 0 }, { id: 12, name: 'Paneer', price_cents: 100 }] },
+            ],
+          },
+          { id: 6, menu_category_id: 1, name: 'Desi Chai', description: null, price_cents: 499, sort_order: 2, is_available: true, option_groups: [] },
+          { id: 7, menu_category_id: 1, name: 'Kheer', description: null, price_cents: 699, sort_order: 3, is_available: false, option_groups: [] },
+        ],
+      },
+    ]
+
+    const openForm = async (abilities = ['read orders', 'manage orders']) => {
+      const wrapper = await mountPage(abilities, [])
+      api.get.mockImplementation((url: string) => (url === 'public/menu' ? ok(menu) : ok([])))
+
+      await button(wrapper, 'New order')!.trigger('click')
+      await flushPromises()
+
+      return wrapper
+    }
+
+    it('needs "manage orders"', async () => {
+      const wrapper = await mountPage(['read orders'])
+
+      expect(button(wrapper, 'New order')).toBeUndefined()
+    })
+
+    it('takes an order from the menu and puts it on the board', async () => {
+      const wrapper = await openForm()
+      expect(wrapper.find('[data-item="7"]').attributes('disabled')).toBeDefined()
+
+      // Two chai, and a patty after picking its filling.
+      await wrapper.find('[data-item="6"]').trigger('click')
+      await wrapper.find('[data-item="6"]').trigger('click')
+      await wrapper.find('[data-item="5"]').trigger('click')
+      expect(button(wrapper, 'Add to order')!.attributes('disabled')).toBeDefined()
+      await button(wrapper, 'Paneer +$1.00')!.trigger('click')
+      await button(wrapper, 'Add to order')!.trigger('click')
+
+      expect(wrapper.find('[data-test="lines"]').text()).toContain('Paneer')
+      expect(wrapper.find('[data-test="total"]').text()).toBe('$16.97')
+
+      const placed = order({ id: 9, reference: 'DVD-1009', status: 'accepted', status_label: 'Accepted', customer_name: 'Walk-in', customer_phone: '', payment_method: 'at_counter' })
+      api.post.mockReturnValue(ok(placed))
+      await wrapper.find('form').trigger('submit')
+      await flushPromises()
+
+      expect(api.post).toHaveBeenCalledWith('orders', {
+        customer_name: undefined,
+        notes: undefined,
+        paid: false,
+        items: [
+          { menu_item_id: 6, quantity: 2, option_ids: [] },
+          { menu_item_id: 5, quantity: 1, option_ids: [12] },
+        ],
+      })
+      expect(wrapper.find('form').exists()).toBe(false)
+
+      const card = column(wrapper, 'accepted').find('[data-order="9"]')
+      expect(card.text()).toContain('Counter')
+      expect(card.find('a[href^="tel:"]').exists()).toBe(false)
+      expect(card.find('[data-test="payment"]').text()).toBe('Not paid')
+    })
+
+    it('can be taken already paid, and shows what the API rejected', async () => {
+      const wrapper = await openForm()
+      await wrapper.find('[data-item="6"]').trigger('click')
+      await wrapper.find('input[type="checkbox"]').setValue(true)
+
+      api.post.mockRejectedValueOnce(
+        Object.assign(new Error('Invalid'), { isAxiosError: true, response: { data: { errors: { 'items.0': ['Sorry, Desi Chai is sold out.'] } } } })
+      )
+      await wrapper.find('form').trigger('submit')
+      await flushPromises()
+
+      expect(api.post.mock.calls[0][1].paid).toBe(true)
+      expect(wrapper.find('[role="alert"]').text()).toBe('Sorry, Desi Chai is sold out.')
+    })
+  })
 })

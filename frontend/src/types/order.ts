@@ -29,7 +29,8 @@ export type Order = {
   notes: string | null
   subtotal_cents: number
   total_cents: number
-  payment_method: 'pay_at_pickup'
+  /** at_counter: taken at the truck by staff. */
+  payment_method: 'pay_at_pickup' | 'at_counter'
   payment_status: 'paid' | 'unpaid'
   items: OrderLine[]
   created_at: string
@@ -38,6 +39,15 @@ export type Order = {
   completed_at: string | null
   cancelled_at: string | null
   cancel_reason: string | null
+}
+
+/** POST /orders: a walk-up order staff take at the truck. */
+export type CounterOrderPayload = {
+  customer_name?: string
+  notes?: string
+  /** Already paid on EFTPOS Air. */
+  paid: boolean
+  items: { menu_item_id: number; quantity: number; option_ids: number[] }[]
 }
 
 export type Day = 'mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat' | 'sun'

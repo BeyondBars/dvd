@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { http } from '@/utils/http'
-import type { Order, OrderStatus } from '@/types/order'
+import type { CounterOrderPayload, Order, OrderStatus } from '@/types/order'
 
 type Page = { data: Order[]; meta: { current_page: number; last_page: number } }
 
@@ -42,6 +42,13 @@ export const useOrderStore = defineStore('orders', {
       this.history.push(...data.data)
       this.historyPage = data.meta.current_page
       this.historyHasMore = data.meta.current_page < data.meta.last_page
+    },
+
+    /** Take a walk-up order at the counter. It goes straight onto the board. */
+    async placeCounterOrder(payload: CounterOrderPayload): Promise<Order> {
+      const { data } = await http.post<{ data: Order }>('orders', payload)
+      this.board.push(data.data)
+      return data.data
     },
 
     async updateStatus(order: Order, status: OrderStatus, reason?: string) {

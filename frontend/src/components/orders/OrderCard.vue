@@ -20,6 +20,7 @@ const NEXT: Partial<Record<OrderStatus, { status: OrderStatus; label: string }>>
 const next = computed(() => NEXT[props.order.status])
 const finished = computed(() => ['completed', 'cancelled'].includes(props.order.status))
 const pickup = computed(() => (props.order.pickup_at ? formatTime(props.order.pickup_at) : 'ASAP'))
+const atCounter = computed(() => props.order.payment_method === 'at_counter')
 </script>
 
 <template>
@@ -33,6 +34,9 @@ const pickup = computed(() => (props.order.pickup_at ? formatTime(props.order.pi
         <p class="text-lg font-bold text-slate-900">{{ order.reference }}</p>
         <p class="flex items-center gap-1.5 text-sm text-slate-600">
           {{ order.customer_name }}
+          <span v-if="atCounter" class="rounded-full bg-slate-100 px-1.5 py-0.5 text-[10px] font-semibold text-slate-600 uppercase" title="Taken at the truck">
+            Counter
+          </span>
           <span v-if="order.customer_id" class="rounded-full bg-slate-100 px-1.5 py-0.5 text-[10px] font-semibold text-slate-600 uppercase" title="Signed in to their account">
             Account
           </span>
@@ -64,7 +68,8 @@ const pickup = computed(() => (props.order.pickup_at ? formatTime(props.order.pi
     </p>
 
     <div class="flex flex-wrap items-center justify-between gap-2 text-sm">
-      <a :href="`tel:${order.customer_phone.replace(/[^\d+]/g, '')}`" class="link-muted flex items-center gap-1.5">
+      <span v-if="!order.customer_phone" />
+      <a v-else :href="`tel:${order.customer_phone.replace(/[^\d+]/g, '')}`" class="link-muted flex items-center gap-1.5">
         <FontAwesomeIcon icon="phone" />
         {{ order.customer_phone }}
       </a>
@@ -83,7 +88,7 @@ const pickup = computed(() => (props.order.pickup_at ? formatTime(props.order.pi
           data-test="payment"
           @click="emit('paid', order.payment_status !== 'paid')"
         >
-          {{ order.payment_status === 'paid' ? 'Paid' : 'Pay at pickup' }}
+          {{ order.payment_status === 'paid' ? 'Paid' : atCounter ? 'Not paid' : 'Pay at pickup' }}
         </button>
       </div>
     </div>
