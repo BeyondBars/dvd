@@ -36,6 +36,29 @@ To keep merges painless:
 - Rebrand by changing the `--color-brand-*` values in `frontend/src/assets/css/app.css` and replacing
   `frontend/src/assets/img/logo/logo.png` and `white-logo.png`. Everything else uses those.
 
+## Email templates
+
+Admins can see every email the app sends under **Email Templates**, preview each one with sample data
+and send a test copy (subject prefixed with `[TEST]`). Access needs the `manage email templates` ability,
+which super admins get; on an existing database run `php artisan abilities:refresh` to add it.
+
+When the app adds an email, register it in `api/app/Providers/EmailTemplateServiceProvider.php`:
+
+```php
+$templates->register(new EmailTemplate(
+    key: 'order_shipped',
+    name: 'Order Shipped',
+    type: EmailTemplateType::Transactional,   // or Marketing
+    triggeredBy: 'order.shipped',
+    description: 'Tells the customer their order is on its way.',
+    sample: fn (User $recipient) => new OrderShippedNotification(Order::factory()->make()),
+));
+```
+
+`sample` returns the real notification built with sample data, so previews match what users get. Test
+copies go to real inboxes, so never put real tokens or signed links in a sample.
+`tests/Feature/EmailTemplateTest.php` renders and test-sends every registered template.
+
 ## Getting started
 
 Requirements: Docker with the Compose plugin.

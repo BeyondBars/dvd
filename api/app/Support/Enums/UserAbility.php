@@ -12,6 +12,7 @@ enum UserAbility: string
     case ManageMenu = 'manage menu';
     case ReadOrders = 'read orders';
     case ManageOrders = 'manage orders';
+    case ManageEmailTemplates = 'manage email templates';
 
     /**
      * Abilities grouped by module for display/syncing. "excludes" lists role values that may never hold it.
@@ -34,6 +35,9 @@ enum UserAbility: string
             'orders' => [
                 'read' => ['name' => self::ReadOrders, 'excludes' => []],
                 'manage' => ['name' => self::ManageOrders, 'excludes' => []],
+            ],
+            'email templates' => [
+                'manage' => ['name' => self::ManageEmailTemplates, 'excludes' => []],
             ],
         ];
     }

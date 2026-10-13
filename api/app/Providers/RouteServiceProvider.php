@@ -48,6 +48,11 @@ class RouteServiceProvider extends ServiceProvider
             ];
         });
 
+        // Test emails sent from the Email Templates page.
+        RateLimiter::for('test-emails', function (Request $request) {
+            return Limit::perMinute(10)->by('test-emails:'.($request->user()?->id ?: $request->ip()));
+        });
+
         // Sending a 2FA code by email/SMS.
         RateLimiter::for('two-factor-send', function (Request $request) {
             return Limit::perMinute(3)->by('2fa-send:'.($request->user()?->id ?: $request->ip()));

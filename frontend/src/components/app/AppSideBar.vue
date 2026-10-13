@@ -19,6 +19,7 @@
       <SidebarItem v-if="can('read orders') || can('manage orders')" :to="{ name: 'orders' }" icon="receipt">Orders</SidebarItem>
       <SidebarItem v-if="can('read menu') || can('manage menu')" :to="{ name: 'menu' }" icon="utensils">Menu</SidebarItem>
       <SidebarItem v-if="can('read users')" :to="{ name: 'users' }" icon="users">User Management</SidebarItem>
+      <SidebarItem v-if="can('manage email templates')" :to="{ name: 'email-templates' }" icon="envelope">Email Templates</SidebarItem>
       <SidebarItem v-if="can('read settings') || can('manage settings')" :to="{ name: 'settings' }" icon="gear">
         Settings
       </SidebarItem>

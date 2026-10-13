@@ -7,9 +7,11 @@ import {
   faBars,
   faChevronLeft,
   faClock,
-  faEye,
   faEyeSlash,
   faCircleUser,
+  faEllipsis,
+  faEnvelope,
+  faEye,
   faGear,
   faHouse,
   faLock,
@@ -19,6 +21,8 @@ import {
   faPlus,
   faPrint,
   faReceipt,
+  faMagnifyingGlass,
+  faPaperPlane,
   faRightFromBracket,
   faShieldHalved,
   faTrash,
@@ -46,6 +50,23 @@ import moment from 'moment'
 import { useSettingsStore } from '@/stores/settings'
 // Add icons to the library
 library.add(faClock, faPhone, faPrint, faReceipt, faVolumeHigh, faVolumeXmark, faArrowDown, faArrowUp, faPen, faPlus, faTrash, faUtensils, faBars, faChevronLeft, faCircleUser, faEye, faEyeSlash, faGear, faHouse, faLock, faPalette, faRightFromBracket, faShieldHalved, faUsers, faXmark, faFacebookF, faGoogle)
+library.add(
+  faBars,
+  faChevronLeft,
+  faCircleUser,
+  faEllipsis,
+  faEnvelope,
+  faEye,
+  faGear,
+  faHouse,
+  faMagnifyingGlass,
+  faPaperPlane,
+  faRightFromBracket,
+  faUsers,
+  faXmark,
+  faFacebookF,
+  faGoogle
+)
 
 const app = createApp(App)
 

@@ -107,5 +107,9 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::post('/menu/items', [Controllers\Menu\ItemController::class, 'store']);
         Route::put('/menu/items/{item}', [Controllers\Menu\ItemController::class, 'update']);
         Route::delete('/menu/items/{item}', [Controllers\Menu\ItemController::class, 'destroy']);
+        // Email templates (registered in App\Providers\EmailTemplateServiceProvider)
+        Route::get('/email-templates', [Controllers\EmailTemplateController::class, 'index']);
+        Route::get('/email-templates/{template}', [Controllers\EmailTemplateController::class, 'show']);
+        Route::post('/email-templates/{template}/test', [Controllers\EmailTemplateController::class, 'sendTest'])->middleware('throttle:test-emails');
     });
 });
