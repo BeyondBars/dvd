@@ -12,6 +12,7 @@ const orderingSettings = (): OrderingSettings => ({
   ordering_enabled: true,
   opening_hours: { mon: { open: '07:00', close: '15:00' }, tue: null, wed: null, thu: null, fri: null, sat: null, sun: null },
   prep_minutes: 15,
+  busy_minutes: 0,
   alert_email: null,
   alert_phone: null,
 })
@@ -182,7 +183,7 @@ describe('Settings page', () => {
       expect(save().attributes('disabled')).toBeUndefined()
     })
 
-    it('saves hours, prep time and alert contacts', async () => {
+    it('saves hours, prep and rush time and alert contacts', async () => {
       const wrapper = await mountPage(['read settings', 'manage settings'])
       api.put.mockReturnValue(ok({ ...orderingSettings(), prep_minutes: 20 }))
 
@@ -190,6 +191,7 @@ describe('Settings page', () => {
       await card(wrapper).find('[aria-label="Saturday opens"]').setValue('09:00')
       await card(wrapper).find('[aria-label="Saturday closes"]').setValue('13:00')
       await card(wrapper).find('#prep_minutes').setValue('20')
+      await card(wrapper).find('#busy_minutes').setValue(10)
       await card(wrapper).find('#alert_phone').setValue(' 0435 331 122 ')
       await card(wrapper).find('form').trigger('submit')
       await flushPromises()
@@ -197,6 +199,7 @@ describe('Settings page', () => {
       expect(api.put).toHaveBeenCalledWith('ordering-settings', {
         ordering_enabled: true,
         prep_minutes: 20,
+        busy_minutes: 10,
         alert_email: null,
         alert_phone: '0435 331 122',
         opening_hours: {

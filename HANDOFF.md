@@ -134,6 +134,18 @@ This repo is the admin and backend for Desi Videshi Diner. The customer website 
 - After pulling: `php artisan migrate && php artisan abilities:refresh`.
 - Not done yet: the website side (menu from the API, cart, checkout, status page, account pages).
 
+### Live kitchen numbers
+- `GET /public/kitchen` (cached 30s): orders cooking, ready for pickup, served today, `wait_minutes`,
+  `busy_level` (quiet / steady / slammed) and the earliest pickup. Counts only, no customer details.
+- Wait = prep time + 3 min per order still to cook (ASAP, or due before a new order could be ready) + rush time,
+  rounded up to 5. Prep time is learned from the last 30 orders' accepted-to-ready time (14 days, at least 5
+  orders, kept within 5 to 60 min), else the Prep time setting. Tunables in `config/ordering.php` under `wait`.
+- The same wait sets the earliest pickup time, and `/public/store` returns it too. `GET /public/orders/{token}`
+  has `orders_ahead` while the order is still cooking.
+- Rush time (`busy_minutes`, 0 to 60) is on the Online ordering card in Settings.
+- Test data: `php artisan db:seed --class=DemoOrdersSeeder` adds today's sample orders (refuses on production).
+- The website (`desi-videshi-diner-website`) shows it once `VITE_DVD_API_URL` is set; until then sample numbers.
+
 ## Getting started (dev)
 ```
 cp api/.env.example api/.env
