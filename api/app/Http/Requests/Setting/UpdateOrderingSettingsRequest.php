@@ -20,6 +20,7 @@ class UpdateOrderingSettingsRequest extends FormRequest
             'ordering_enabled' => ['sometimes', 'boolean'],
             'opening_hours' => ['sometimes', 'array:'.implode(',', Ordering::DAYS)],
             'prep_minutes' => ['sometimes', 'integer', 'min:0', 'max:240'],
+            'busy_minutes' => ['sometimes', 'integer', 'min:0', 'max:60'],
             'alert_email' => ['sometimes', 'nullable', 'email', 'max:120'],
             'alert_phone' => ['sometimes', 'nullable', 'string', 'regex:/^\+?[0-9 ()\-]{8,20}$/'],
         ];

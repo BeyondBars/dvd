@@ -1,5 +1,5 @@
 <script setup lang="ts">
-/** Settings > Online ordering: on/off, opening hours, prep time and who hears about new orders. */
+/** Settings > Online ordering: on/off, opening hours, prep and rush time, and who hears about new orders. */
 import { computed, onMounted, ref } from 'vue'
 import { isAxiosError } from 'axios'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
@@ -8,6 +8,13 @@ import { useOrderingStore } from '@/stores/ordering'
 import type { Day, OrderingSettings } from '@/types/order'
 
 const props = defineProps<{ canManage: boolean }>()
+
+const RUSH_OPTIONS = [
+  { value: 0, label: 'Normal' },
+  { value: 10, label: '+10 min' },
+  { value: 20, label: '+20 min' },
+  { value: 30, label: '+30 min' },
+]
 
 const DAYS: { key: Day; label: string }[] = [
   { key: 'mon', label: 'Monday' },
@@ -36,6 +43,7 @@ const saving = ref(false)
 const toForm = (settings: OrderingSettings): Form => ({
   ordering_enabled: settings.ordering_enabled,
   prep_minutes: settings.prep_minutes,
+  busy_minutes: settings.busy_minutes,
   alert_email: settings.alert_email ?? '',
   alert_phone: settings.alert_phone ?? '',
   days: Object.fromEntries(
@@ -49,6 +57,7 @@ const toForm = (settings: OrderingSettings): Form => ({
 const payload = (form: Form): OrderingSettings => ({
   ordering_enabled: form.ordering_enabled,
   prep_minutes: Number(form.prep_minutes),
+  busy_minutes: Number(form.busy_minutes),
   alert_email: form.alert_email.trim() || null,
   alert_phone: form.alert_phone.trim() || null,
   opening_hours: Object.fromEntries(
@@ -144,6 +153,14 @@ const save = async () => {
             <label class="form-label" for="prep_minutes">Prep time (minutes)</label>
             <input id="prep_minutes" v-model="form.prep_minutes" class="form-input" :class="{ 'is-invalid': errors.prep_minutes }" type="number" min="0" max="240" />
             <span v-if="errors.prep_minutes" class="form-error">{{ errors.prep_minutes[0] }}</span>
+          </div>
+          <div class="mb-4">
+            <label class="form-label" for="busy_minutes">Rush time</label>
+            <select id="busy_minutes" v-model.number="form.busy_minutes" class="form-input" :class="{ 'is-invalid': errors.busy_minutes }">
+              <option v-for="option in RUSH_OPTIONS" :key="option.value" :value="option.value">{{ option.label }}</option>
+            </select>
+            <span class="mt-1 block text-xs text-slate-500">Added to the wait the website shows.</span>
+            <span v-if="errors.busy_minutes" class="form-error">{{ errors.busy_minutes[0] }}</span>
           </div>
           <div class="mb-4">
             <label class="form-label" for="alert_email">New order email</label>

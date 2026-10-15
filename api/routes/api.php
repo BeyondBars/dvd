@@ -33,6 +33,7 @@ Route::get('/settings', [Controllers\SettingController::class, 'show']);
 Route::prefix('public')->middleware('throttle:public')->group(function () {
     Route::get('/menu', Controllers\PublicApi\MenuController::class);
     Route::get('/store', Controllers\PublicApi\StoreController::class);
+    Route::get('/kitchen', Controllers\PublicApi\KitchenController::class);
     Route::post('/orders', [Controllers\PublicApi\OrderController::class, 'store'])->middleware('throttle:orders');
     Route::get('/orders/{token}', [Controllers\PublicApi\OrderController::class, 'show']);
 

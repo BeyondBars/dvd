@@ -2,6 +2,8 @@
 
 namespace App\Http\Resources;
 
+use App\Models\Order;
+use App\Support\Enums\OrderStatus;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
@@ -30,8 +32,27 @@ class PublicOrderResource extends JsonResource
                 'options' => $item->options ?? [],
                 'notes' => $item->notes,
             ])->values(),
+            'orders_ahead' => $this->ordersAhead(),
             'created_at' => $this->created_at?->toIso8601String(),
             'cancel_reason' => $this->cancel_reason,
         ];
+    }
+
+    /**
+     * Orders placed earlier today that are still to be cooked, while this one is too. Null once it's ready.
+     */
+    private function ordersAhead(): ?int
+    {
+        $cooking = [OrderStatus::New, OrderStatus::Accepted, OrderStatus::Preparing];
+
+        if (!in_array($this->status, $cooking, true)) {
+            return null;
+        }
+
+        return Order::query()
+            ->whereIn('status', array_map(fn ($status) => $status->value, $cooking))
+            ->where('id', '<', $this->id)
+            ->where('created_at', '>=', $this->created_at->copy()->setTimezone(config('ordering.timezone'))->startOfDay()->utc())
+            ->count();
     }
 }

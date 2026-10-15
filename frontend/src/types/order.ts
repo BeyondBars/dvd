@@ -47,6 +47,8 @@ export type OrderingSettings = {
   ordering_enabled: boolean
   opening_hours: Record<Day, { open: string; close: string } | null>
   prep_minutes: number
+  /** Rush time staff add to the website's wait estimate. */
+  busy_minutes: number
   alert_email: string | null
   alert_phone: string | null
 }
